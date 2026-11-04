@@ -71,14 +71,8 @@ flowchart TD
     J --> K2[Visualisation]
     J --> K3[Streamlit dashboard]
     GT[(Ground-truth poses)] -. labelling and evaluation only .-> K1
-    style B fill:#c6f6d5,stroke:#2f855a
-    style A fill:#c6f6d5,stroke:#2f855a
-    style C fill:#c6f6d5,stroke:#2f855a
-    style D1 fill:#c6f6d5,stroke:#2f855a
-    style E fill:#c6f6d5,stroke:#2f855a
-    style F fill:#c6f6d5,stroke:#2f855a
-    style G fill:#c6f6d5,stroke:#2f855a
-    style H fill:#c6f6d5,stroke:#2f855a
+    classDef done fill:#2f855a,stroke:#1c4532,color:#ffffff,stroke-width:2px
+    class A,B,C,D1,E,F,G,H done
 ```
 
 Green boxes are implemented (Phases 1–3). Ground-truth poses are only ever used for labelling,
@@ -528,19 +522,20 @@ flowchart LR
     CE --> PR[Predictor g_phi: narrow ViT + mask tokens + positions]
     PR --> SH[Predicted representations s_y_hat]
     SH -. regression loss .- T
-    style TE fill:#c6f6d5,stroke:#2f855a
+    classDef done fill:#2f855a,stroke:#1c4532,color:#ffffff,stroke-width:2px
+    class TE done
 ```
 
 * **Context encoder** $f_\theta$: a ViT that sees only the visible context patches.
 * **Target encoder** $f_{\bar\theta}$: the same architecture with weights updated as an exponential moving average, $\bar\theta \leftarrow m\ \bar\theta + (1-m)\ \theta$. It encodes the *full* image, and the target blocks are read from its output.
 * **Predictor** $g_\phi$: from the context representations plus learnable mask tokens (carrying each target patch's position embedding), it predicts the target patch representations.
-* **Loss.** The paper writes it as an L2 distance averaged over the $M = 4$ target blocks $B_i$:
+**Loss.** The paper writes it as an L2 distance averaged over the $M = 4$ target blocks $B_i$:
 
-  ```math
-  \mathcal{L} = \frac{1}{M}\sum_{i=1}^{M}\sum_{j \in B_i}\left\lVert \hat{s}_{y_j} - s_{y_j}\right\rVert_2^2 .
-  ```
+```math
+\mathcal{L} = \frac{1}{M}\sum_{i=1}^{M}\sum_{j \in B_i}\left\lVert \hat{s}_{y_j} - s_{y_j}\right\rVert_2^2 .
+```
 
-  The official training code (`src/train.py`) instead applies `F.layer_norm` to the target features and uses `F.smooth_l1_loss`. Gradients reach only $\theta$ and $\phi$. The EMA target and multi-block masking (large, semantic target blocks plus an informative context) prevent representational collapse without negative pairs or hand-crafted augmentations.
+The official training code (`src/train.py`) instead applies `F.layer_norm` to the target features and uses `F.smooth_l1_loss`. Gradients reach only $\theta$ and $\phi$. The EMA target and multi-block masking (large, semantic target blocks plus an informative context) prevent representational collapse without negative pairs or hand-crafted augmentations.
 
 Pretraining settings of the checkpoint used here, read from the official `configs/in1k_vith14_ep300.yaml`:
 
