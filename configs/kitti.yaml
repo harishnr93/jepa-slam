@@ -1,0 +1,14 @@
+# KITTI Odometry configuration. Inherits every value from default.yaml.
+#
+# Expected layout (official "data_odometry_color" + "data_odometry_poses" archives):
+#   data/raw/kitti/dataset/sequences/00/{image_2/000000.png, calib.txt, times.txt}
+#   data/raw/kitti/dataset/poses/00.txt          (ground truth for sequences 00-10 only)
+extends: default.yaml
+
+dataset:
+  name: kitti
+  root: data/raw/kitti/dataset
+  sequence: "00"
+  camera: 2
+  sampling:
+    stride: 1

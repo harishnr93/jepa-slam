@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.env/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Data, checkpoints and caches (never committed)
+data/raw/*
+data/processed/*
+data/cache/*
+checkpoints/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/cache/.gitkeep
+!checkpoints/.gitkeep
+
+# Large generated results (selected small figures live in assets/)
+results/metrics/*
+results/plots/*
+results/examples/*
+!results/*/.gitkeep
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+*:Zone.Identifier

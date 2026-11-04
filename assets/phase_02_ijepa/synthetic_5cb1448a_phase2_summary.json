@@ -1,0 +1,122 @@
+{
+  "phase": 2,
+  "dataset_key": "synthetic_5cb1448a",
+  "frames": 300,
+  "frame_stride": 2,
+  "encoder": {
+    "name": "ijepa",
+    "checkpoint": "vith14_in1k",
+    "source_sha256": "0382013c481743e9ccea89f970bc6c6aa126aa19a62127500d6e672a641aae22",
+    "arch": "vit_huge",
+    "patch_size": 14,
+    "image_size": 224,
+    "resize_mode": "squash",
+    "normalization": {
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "pooling": "mean",
+    "l2_normalized": true,
+    "embedding_dim": 1280,
+    "runtime": {
+      "device": "cuda",
+      "precision": "fp32"
+    }
+  },
+  "fingerprint": "d49bc21384",
+  "ground_truth": {
+    "positive_radius_m": 5.0,
+    "negative_radius_m": 25.0,
+    "min_gap_frames": 100
+  },
+  "separability": {
+    "positives": 565,
+    "negatives": 28473,
+    "auc": 0.9850772459796565,
+    "pos_median": 0.9935182929039001,
+    "neg_median": 0.9646689295768738,
+    "neg_p99": 0.9871761798858643
+  },
+  "preprocessing_comparison": [
+    {
+      "resize_mode": "squash",
+      "input": "224\u00d7224",
+      "positives": 565,
+      "negatives": 28473,
+      "auc": 0.9850772459796565,
+      "pos_median": 0.9935182929039001,
+      "neg_median": 0.9646689295768738,
+      "neg_p99": 0.9871761798858643
+    },
+    {
+      "resize_mode": "center_crop",
+      "input": "224\u00d7224",
+      "positives": 565,
+      "negatives": 28473,
+      "auc": 0.950184291965467,
+      "pos_median": 0.9951664805412292,
+      "neg_median": 0.9528281688690186,
+      "neg_p99": 0.9856837391853333
+    },
+    {
+      "resize_mode": "aspect",
+      "input": "728\u00d7224",
+      "positives": 565,
+      "negatives": 28473,
+      "auc": 0.967992499648013,
+      "pos_median": 0.9942874908447266,
+      "neg_median": 0.9535847306251526,
+      "neg_p99": 0.9863905310630798
+    }
+  ],
+  "extraction": {
+    "cache_dir": "/mnt/e/project_ws/jepa_slam/data/cache/embeddings/synthetic_5cb1448a/ijepa-d49bc21384",
+    "encoded_now": 0,
+    "profile": {
+      "peak_gpu_allocated_mb": 0.0,
+      "peak_gpu_reserved_mb": 60.0,
+      "peak_cpu_rss_mb": 758.5
+    }
+  },
+  "patch_pairs": [
+    {
+      "query_id": 374,
+      "ref_id": 0,
+      "label": "GT revisit",
+      "distance_m": 0.2477359302341646,
+      "global_cos": 0.9990066885948181
+    },
+    {
+      "query_id": 564,
+      "ref_id": 334,
+      "label": "hardest negative",
+      "distance_m": 87.95149077139622,
+      "global_cos": 0.992586612701416
+    },
+    {
+      "query_id": 560,
+      "ref_id": 106,
+      "label": "random negative",
+      "distance_m": 64.57272722040874,
+      "global_cos": 0.9646207094192505
+    }
+  ],
+  "gif_frames": 120,
+  "gif_size_mb": 3.94,
+  "gif_render_seconds": 91.7,
+  "outputs": {
+    "similarity_matrix": "synthetic_5cb1448a_similarity_matrix.png",
+    "descriptor_distribution": "synthetic_5cb1448a_descriptor_distribution.png",
+    "patch_similarity": "synthetic_5cb1448a_patch_similarity.png",
+    "preprocessing": "synthetic_5cb1448a_preprocessing_comparison.png",
+    "similarity_gif": "synthetic_5cb1448a_similarity_evolution.gif"
+  }
+}

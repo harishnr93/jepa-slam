@@ -1,0 +1,17 @@
+# Phase 1 runtime dependencies (tested with Python 3.12.13 on Ubuntu 22.04 / WSL2).
+# FAISS, DINOv2 and Streamlit are added in the phases that need them.
+numpy>=1.26,<2.3
+scipy>=1.11
+opencv-python-headless>=4.9,<5
+matplotlib>=3.8
+Pillow>=10.0
+imageio>=2.34
+PyYAML>=6.0
+pandas>=2.1
+
+# Phase 2: I-JEPA inference (version verified on the GTX 1650 Ti, CUDA 13.2 build)
+torch==2.15.0
+
+# Development
+pytest>=8.0
+ruff>=0.6

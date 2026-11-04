@@ -1,0 +1,53 @@
+# Latent-Loop default configuration.
+# Relative paths are resolved against the repository root.
+
+project:
+  name: latent-loop
+  seed: 0
+
+paths:
+  data_root: data
+  raw_dir: data/raw
+  processed_dir: data/processed
+  cache_dir: data/cache
+  checkpoints_dir: checkpoints
+  results_dir: results
+  assets_dir: assets
+
+logging:
+  level: INFO
+  file: null          # e.g. results/latent_loop.log
+
+dataset:
+  name: synthetic     # synthetic | kitti
+  sequence: "00"
+  camera: 2           # KITTI camera index (0/1 grayscale, 2/3 colour)
+
+  # Frame sampling applied on top of the raw sequence (original frame IDs are preserved).
+  sampling:
+    start: 0          # first original frame ID (inclusive)
+    end: null         # last original frame ID (exclusive); null = end of sequence
+    stride: 1         # keep frame IDs f with (f - start) % stride == 0
+    max_frames: null  # cap on the number of sampled frames; null = no cap
+
+  synthetic:
+    seed: 7
+    image_width: 416
+    image_height: 128
+    frame_spacing_m: 1.0
+    frame_rate_hz: 10.0
+    block_length_m: 120.0
+    block_width_m: 80.0
+    corner_radius_m: 15.0
+    laps: 1.6         # >1 creates a revisited segment with known loop closures
+    revisit_lateral_offset_m: 0.5
+    camera_height_m: 1.65
+    noise_std: 2.0
+
+visualization:
+  output_dir: assets/phase_01_dataset
+  dpi: 120
+  gif_fps: 10
+  gif_width_px: 900
+  gif_max_frames: 120
+  sample_stride: 10  # stride used to illustrate frame sampling in Phase 1 plots

@@ -1,0 +1,19 @@
+# I-JEPA feature extraction (Phase 2). Inherits every value from default.yaml.
+# For KITTI: --set dataset.name=kitti dataset.root=data/raw/kitti/dataset dataset.sequence='00'
+extends: default.yaml
+
+device: auto          # auto | cuda | cpu (CUDA requests fall back to CPU with a warning)
+encoder: ijepa
+
+ijepa:
+  checkpoint: vith14_in1k  # vith14_in1k | vith16_448_in1k | vith14_in22k | vitg16_in22k
+  precision: auto          # auto: bf16 if native, else fp16 on GPU; fp32 on CPU
+  resize_mode: squash      # squash | center_crop | aspect
+  image_size: null         # null = pre-training resolution (224 px for ViT-H/14)
+  pooling: mean            # mean of patch tokens (I-JEPA has no CLS token)
+
+extraction:
+  batch_size: 8
+  cpu_fallback: true       # move to CPU fp32 if CUDA OOM persists at batch size 1
+  flush_every: 256         # frames between cache writes (resumable)
+  cache_root: data/cache/embeddings

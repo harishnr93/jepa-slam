@@ -1,0 +1,138 @@
+{
+  "phase": 2,
+  "dataset_key": "kitti_00_cam2",
+  "frames": 909,
+  "frame_stride": 5,
+  "encoder": {
+    "name": "ijepa",
+    "checkpoint": "vith14_in1k",
+    "source_sha256": "0382013c481743e9ccea89f970bc6c6aa126aa19a62127500d6e672a641aae22",
+    "arch": "vit_huge",
+    "patch_size": 14,
+    "image_size": 224,
+    "resize_mode": "squash",
+    "normalization": {
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "pooling": "mean",
+    "l2_normalized": true,
+    "embedding_dim": 1280,
+    "runtime": {
+      "device": "cuda",
+      "precision": "fp32"
+    }
+  },
+  "fingerprint": "d49bc21384",
+  "ground_truth": {
+    "positive_radius_m": 5.0,
+    "negative_radius_m": 25.0,
+    "min_gap_frames": 100
+  },
+  "separability": {
+    "positives": 527,
+    "negatives": 391867,
+    "auc": 0.8343971446494677,
+    "pos_median": 0.9465138912200928,
+    "neg_median": 0.7489253878593445,
+    "neg_p99": 0.93523108959198
+  },
+  "preprocessing_comparison": [
+    {
+      "resize_mode": "squash",
+      "input": "224\u00d7224",
+      "positives": 527,
+      "negatives": 391867,
+      "auc": 0.8343971446494677,
+      "pos_median": 0.9465138912200928,
+      "neg_median": 0.7489253878593445,
+      "neg_p99": 0.93523108959198
+    },
+    {
+      "resize_mode": "center_crop",
+      "input": "224\u00d7224",
+      "positives": 527,
+      "negatives": 391867,
+      "auc": 0.7992479649397368,
+      "pos_median": 0.936693012714386,
+      "neg_median": 0.6384754776954651,
+      "neg_p99": 0.9155799746513367
+    },
+    {
+      "resize_mode": "aspect",
+      "input": "742\u00d7224",
+      "positives": 527,
+      "negatives": 391867,
+      "auc": 0.8822092002529476,
+      "pos_median": 0.9489630460739136,
+      "neg_median": 0.7732677459716797,
+      "neg_p99": 0.9235424995422363
+    }
+  ],
+  "extraction": {
+    "cache_dir": "/mnt/e/project_ws/jepa_slam/data/cache/embeddings/kitti_00_cam2/ijepa-d49bc21384",
+    "encoded_now": 909,
+    "profile": {
+      "image_load_wait": {
+        "calls": 114,
+        "items": 909,
+        "total_s": 242.924,
+        "ms_per_item": 267.24,
+        "median_call_ms": 1772.94,
+        "p95_call_ms": 3840.66
+      },
+      "encode": {
+        "calls": 114,
+        "items": 909,
+        "total_s": 218.415,
+        "ms_per_item": 240.28,
+        "median_call_ms": 1845.09,
+        "p95_call_ms": 2084.99
+      },
+      "peak_gpu_allocated_mb": 2584.8,
+      "peak_gpu_reserved_mb": 2678.0,
+      "peak_cpu_rss_mb": 4942.4
+    }
+  },
+  "patch_pairs": [
+    {
+      "query_id": 3395,
+      "ref_id": 2445,
+      "label": "GT revisit",
+      "distance_m": 0.25954709484464805,
+      "global_cos": 0.9925245046615601
+    },
+    {
+      "query_id": 3615,
+      "ref_id": 640,
+      "label": "hardest negative",
+      "distance_m": 26.889914870018497,
+      "global_cos": 0.9857993125915527
+    },
+    {
+      "query_id": 4200,
+      "ref_id": 550,
+      "label": "random negative",
+      "distance_m": 218.12656374014895,
+      "global_cos": 0.6875584125518799
+    }
+  ],
+  "gif_frames": 120,
+  "gif_size_mb": 6.77,
+  "gif_render_seconds": 101.7,
+  "outputs": {
+    "similarity_matrix": "kitti_00_cam2_similarity_matrix.png",
+    "descriptor_distribution": "kitti_00_cam2_descriptor_distribution.png",
+    "patch_similarity": "kitti_00_cam2_patch_similarity.png",
+    "preprocessing": "kitti_00_cam2_preprocessing_comparison.png",
+    "similarity_gif": "kitti_00_cam2_similarity_evolution.gif"
+  }
+}
