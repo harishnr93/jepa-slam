@@ -1,0 +1,80 @@
+{
+  "config": {
+    "top_k": 10,
+    "temporal_exclusion_frames": 100,
+    "temporal_exclusion_seconds": null,
+    "min_similarity": null,
+    "nms_frames": 0,
+    "mode": "offline"
+  },
+  "timing": {
+    "index_build_s": 0.005425,
+    "search_s": 0.148565,
+    "total_s": 0.153996,
+    "search_ms_per_query": 0.163437
+  },
+  "dataset_key": "kitti_00_cam2",
+  "queries": 909,
+  "encoder": {
+    "name": "ijepa",
+    "checkpoint": "vith14_in1k",
+    "source_sha256": "0382013c481743e9ccea89f970bc6c6aa126aa19a62127500d6e672a641aae22",
+    "arch": "vit_huge",
+    "patch_size": 14,
+    "image_size": 224,
+    "resize_mode": "squash",
+    "normalization": {
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "pooling": "mean",
+    "l2_normalized": true,
+    "embedding_dim": 1280,
+    "runtime": {
+      "device": "cuda",
+      "precision": "fp32"
+    }
+  },
+  "fingerprint": "d49bc21384",
+  "causal_check": {
+    "other_mode": "causal",
+    "identical_candidates": true,
+    "max_score_diff": 0.0,
+    "other_timing": {
+      "index_build_s": 0.074589,
+      "search_s": 0.218822,
+      "total_s": 0.293738,
+      "search_ms_per_query": 0.240729
+    }
+  },
+  "ground_truth": {
+    "distance_only": {
+      "spatial_threshold_m": 5.0,
+      "max_heading_diff_deg": null,
+      "positive_queries": 162,
+      "recall_at_k_preliminary": {
+        "1": 0.7777777777777778,
+        "5": 0.8765432098765432,
+        "10": 0.8888888888888888
+      }
+    },
+    "same_direction": {
+      "spatial_threshold_m": 5.0,
+      "max_heading_diff_deg": 30.0,
+      "positive_queries": 150,
+      "recall_at_k_preliminary": {
+        "1": 0.84,
+        "5": 0.9466666666666667,
+        "10": 0.96
+      }
+    }
+  }
+}

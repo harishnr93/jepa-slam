@@ -44,6 +44,18 @@ dataset:
     camera_height_m: 1.65
     noise_std: 2.0
 
+retrieval:              # Phase 3 (ground truth is never used here)
+  top_k: 10
+  temporal_exclusion_frames: 100   # in ORIGINAL frame IDs (10 s at KITTI's 10 Hz)
+  temporal_exclusion_seconds: null # optional additional rule on timestamps
+  min_similarity: null             # optional cosine threshold for candidates
+  nms_frames: 0                    # temporal non-maximum suppression; 0 = off
+  mode: offline                    # offline | causal
+
+ground_truth:           # labelling and evaluation only
+  spatial_threshold_m: 5.0
+  max_heading_diff_deg: 30.0       # second definition: same viewing direction
+
 visualization:
   output_dir: assets/phase_01_dataset
   dpi: 120

@@ -25,7 +25,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6"]
 # Phase 2+: frozen neural encoders (I-JEPA). Tested with torch 2.15.0 (CUDA 13.2 wheels).
-ml = ["torch>=2.5"]
+ml = ["torch>=2.5", "faiss-cpu>=1.8"]  # faiss: Phase 3 retrieval (tested 1.15.1)
 
 [tool.setuptools.packages.find]
 where = ["src"]

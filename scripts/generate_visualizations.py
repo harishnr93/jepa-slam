@@ -7,6 +7,7 @@ Usage:
     python scripts/generate_visualizations.py --phase 1 --stride 5 --max-frames 80 --gif-fps 8
     python scripts/generate_visualizations.py --phase 2                       # I-JEPA, synthetic
     python scripts/generate_visualizations.py --phase 2 --stride 1 --no-preprocessing-comparison
+    python scripts/generate_visualizations.py --phase 3                       # retrieval, synthetic
 """
 
 from __future__ import annotations
@@ -30,9 +31,13 @@ from latent_loop.visualization.plots import plot_frame_montage, save_figure
 from latent_loop.visualization.trajectory import plot_trajectory_overview
 
 logger = get_logger("generate_visualizations")
-IMPLEMENTED_PHASES = (1, 2)
-DEFAULT_CONFIGS = {1: "configs/default.yaml", 2: "configs/ijepa.yaml"}
-DEFAULT_OUTPUT_DIRS = {2: "assets/phase_02_ijepa"}
+IMPLEMENTED_PHASES = (1, 2, 3)
+DEFAULT_CONFIGS = {
+    1: "configs/default.yaml",
+    2: "configs/ijepa.yaml",
+    3: "configs/ijepa.yaml",
+}
+DEFAULT_OUTPUT_DIRS = {2: "assets/phase_02_ijepa", 3: "assets/phase_03_retrieval"}
 
 
 def _dataset_tag(config: dict[str, Any]) -> str:
@@ -181,6 +186,18 @@ def main() -> None:
         )
     if args.phase == 1:
         summary = phase1(config, args)
+    elif args.phase == 3:
+        from latent_loop.visualization.phase3 import generate_phase3  # noqa: PLC0415
+
+        vis = config["visualization"]
+        summary = generate_phase3(
+            config,
+            resolve_path(args.output_dir or DEFAULT_OUTPUT_DIRS[3]),
+            vis_stride=args.stride or 2,
+            gif_frames=args.max_frames or vis["gif_max_frames"],
+            gif_fps=args.gif_fps or 8.0,
+            gif_width=args.gif_width or vis["gif_width_px"],
+        )
     else:
         from latent_loop.visualization.phase2 import generate_phase2  # noqa: PLC0415
 

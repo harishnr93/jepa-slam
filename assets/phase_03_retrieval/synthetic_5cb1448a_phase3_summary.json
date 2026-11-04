@@ -1,0 +1,62 @@
+{
+  "phase": 3,
+  "dataset_key": "synthetic_5cb1448a",
+  "queries": 300,
+  "frame_stride": 2,
+  "retrieval_config": {
+    "top_k": 10,
+    "temporal_exclusion_frames": 100,
+    "temporal_exclusion_seconds": null,
+    "min_similarity": null,
+    "nms_frames": 0,
+    "mode": "offline"
+  },
+  "retrieval_result_dir": "/mnt/e/project_ws/jepa_slam/results/retrieval/synthetic_5cb1448a/ijepa-d49bc21384/offline",
+  "loaded_saved_result": true,
+  "timing": {
+    "index_build_s": 0.027207,
+    "search_s": 0.023336,
+    "total_s": 0.050549,
+    "search_ms_per_query": 0.077786
+  },
+  "recall_at_k_preliminary": {
+    "distance_only": {
+      "1": 0.9826086956521739,
+      "5": 1.0,
+      "10": 1.0
+    },
+    "same_direction": {
+      "1": 0.9826086956521739,
+      "5": 1.0,
+      "10": 1.0
+    }
+  },
+  "positive_queries": {
+    "distance_only": 115,
+    "same_direction": 115
+  },
+  "example_queries": [
+    {
+      "frame_id": 420,
+      "case": "true revisit at rank 1"
+    },
+    {
+      "frame_id": 372,
+      "case": "revisit missed at rank 1"
+    },
+    {
+      "frame_id": 368,
+      "case": "no revisit exists: false candidate"
+    }
+  ],
+  "gif_frames": 120,
+  "gif_size_mb": 5.57,
+  "gif_render_seconds": 97.8,
+  "outputs": {
+    "topk_gallery": "synthetic_5cb1448a_topk_gallery.png",
+    "candidate_trajectory": "synthetic_5cb1448a_candidate_trajectory.png",
+    "retrieval_matrix": "synthetic_5cb1448a_retrieval_matrix.png",
+    "recall_curve": "synthetic_5cb1448a_recall_at_k.png",
+    "retrieval_gif": "synthetic_5cb1448a_retrieval.gif"
+  }
+}

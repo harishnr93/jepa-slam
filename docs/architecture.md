@@ -1,6 +1,6 @@
 # Architecture
 
-Status: Phase 2. This document grows with each phase.
+Status: Phase 3. This document grows with each phase.
 
 ## Module map
 
@@ -28,8 +28,13 @@ flowchart LR
         pooling[pooling.py<br/>mean pool + L2]
         cache[cache.py<br/>EmbeddingCache by frame ID]
     end
+    subgraph retrieval
+        index[index.py<br/>FAISS IndexFlatIP<br/>+ IDSelectorRange]
+        temporal[temporal_filter.py<br/>eligible prefix by frame ID / time]
+        detector[detector.py<br/>offline + causal retrieve,<br/>candidate filtering]
+    end
     subgraph evaluation
-        metrics[metrics.py<br/>roc_auc]
+        metrics[metrics.py<br/>roc_auc, recall_at_k]
         profiling[profiling.py<br/>Profiler]
     end
     subgraph visualization
@@ -47,6 +52,9 @@ flowchart LR
     extraction --> base
     emb --> metrics
     emb --> gt
+    detector --> index
+    detector --> temporal
+    detector --> cache
     kitti --> base
     synthetic --> base
     kitti --> gt
@@ -116,3 +124,34 @@ sequenceDiagram
    SHA-256, architecture, input size, resize mode, normalisation and pooling, so changing any of
    them can never silently reuse stale descriptors. Device and precision are recorded per run but
    not hashed.
+
+## Data flow (Phase 3)
+
+```mermaid
+sequenceDiagram
+    participant CLI as run_retrieval.py
+    participant C as EmbeddingCache
+    participant T as TemporalExclusion
+    participant I as FlatIPIndex (FAISS)
+    participant GT as revisit_ground_truth
+    CLI->>C: descriptors for dataset.frame_ids (Phase 2 cache)
+    CLI->>T: eligible_counts(frame_ids, timestamps)
+    alt offline
+        CLI->>I: add(all descriptors)
+        CLI->>I: search(all queries, K, prefix limits)
+    else causal replay
+        loop t = 0 .. N-1
+            CLI->>I: search(query t, K, min(limit_t, frames so far))
+            CLI->>I: add(frame t)
+        end
+    end
+    I-->>CLI: candidate frame IDs + cosine scores
+    CLI->>CLI: filter (threshold, temporal NMS), assert_causal
+    Note over CLI,GT: ground truth is computed only after retrieval, for labels and metrics
+    CLI->>GT: poses -> positives per query (distance-only, same-direction)
+    CLI-->>CLI: save retrieval.npz / retrieval.json / top1.csv
+```
+
+6. **Eligibility is a prefix.** Frames are indexed chronologically, so every query's eligible set
+   is `[0, n_q)`, enforced inside FAISS with `IDSelectorRange`. Offline evaluation and causal
+   replay are therefore exactly equivalent, which is tested.

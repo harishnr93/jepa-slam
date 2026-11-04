@@ -16,6 +16,7 @@ selecting retrieval candidates.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -141,3 +142,64 @@ def pair_labels(
     labels[eligible & (dist <= positive_radius_m)] = POSITIVE
     labels[eligible & (dist > negative_radius_m)] = NEGATIVE
     return labels
+
+
+@dataclass(frozen=True)
+class RevisitGroundTruth:
+    """Per-query sets of true revisit references (original frame IDs).
+
+    ``positives[i]`` holds the frame IDs of every *eligible* earlier frame within the
+    spatial threshold of query ``frame_ids[i]`` (empty when the query revisits nothing).
+    """
+
+    frame_ids: np.ndarray
+    positives: tuple[np.ndarray, ...]
+    spatial_threshold_m: float
+    exclusion_frames: int
+    max_heading_diff_deg: float | None
+
+    @property
+    def has_positive(self) -> np.ndarray:
+        return np.array([p.size > 0 for p in self.positives], dtype=bool)
+
+    def is_positive(self, query_index: int, reference_frame_ids: np.ndarray) -> np.ndarray:
+        return np.isin(reference_frame_ids, self.positives[query_index])
+
+
+def revisit_ground_truth(
+    poses: np.ndarray,
+    frame_ids: np.ndarray,
+    spatial_threshold_m: float = 5.0,
+    exclusion_frames: int = 100,
+    max_heading_diff_deg: float | None = None,
+) -> RevisitGroundTruth:
+    """Ground-truth revisit labels for retrieval evaluation (never for candidate selection).
+
+    Reference ``j`` is a true revisit of query ``i`` iff
+
+    * ``frame_id_j <= frame_id_i - exclusion_frames``  (temporal separation, original IDs),
+    * ``||p_i - p_j||_2 <= spatial_threshold_m``       (ground-plane x-z distance), and
+    * optionally ``|wrap(yaw_i - yaw_j)| <= max_heading_diff_deg`` (same viewing direction).
+    """
+    poses = np.asarray(poses)
+    ids = np.asarray(frame_ids, dtype=np.int64)
+    xz = poses[:, [0, 2], 3]
+    yaw = yaw_from_poses(poses)
+    positives = []
+    for i in range(ids.size):
+        eligible = np.flatnonzero(ids <= ids[i] - exclusion_frames)
+        if eligible.size == 0:
+            positives.append(np.zeros(0, dtype=np.int64))
+            continue
+        ok = np.linalg.norm(xz[eligible] - xz[i], axis=1) <= spatial_threshold_m
+        if max_heading_diff_deg is not None:
+            dyaw = np.abs(np.angle(np.exp(1j * (yaw[eligible] - yaw[i]))))
+            ok &= dyaw <= np.radians(max_heading_diff_deg)
+        positives.append(ids[eligible[ok]])
+    return RevisitGroundTruth(
+        ids,
+        tuple(positives),
+        float(spatial_threshold_m),
+        int(exclusion_frames),
+        max_heading_diff_deg,
+    )

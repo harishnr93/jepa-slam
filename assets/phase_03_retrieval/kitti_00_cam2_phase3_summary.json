@@ -1,0 +1,62 @@
+{
+  "phase": 3,
+  "dataset_key": "kitti_00_cam2",
+  "queries": 909,
+  "frame_stride": 5,
+  "retrieval_config": {
+    "top_k": 10,
+    "temporal_exclusion_frames": 100,
+    "temporal_exclusion_seconds": null,
+    "min_similarity": null,
+    "nms_frames": 0,
+    "mode": "offline"
+  },
+  "retrieval_result_dir": "/mnt/e/project_ws/jepa_slam/results/retrieval/kitti_00_cam2/ijepa-d49bc21384/offline",
+  "loaded_saved_result": true,
+  "timing": {
+    "index_build_s": 0.005425,
+    "search_s": 0.148565,
+    "total_s": 0.153996,
+    "search_ms_per_query": 0.163437
+  },
+  "recall_at_k_preliminary": {
+    "distance_only": {
+      "1": 0.7777777777777778,
+      "5": 0.8765432098765432,
+      "10": 0.8888888888888888
+    },
+    "same_direction": {
+      "1": 0.84,
+      "5": 0.9466666666666667,
+      "10": 0.96
+    }
+  },
+  "positive_queries": {
+    "distance_only": 162,
+    "same_direction": 150
+  },
+  "example_queries": [
+    {
+      "frame_id": 4505,
+      "case": "true revisit at rank 1"
+    },
+    {
+      "frame_id": 3620,
+      "case": "revisit missed at rank 1"
+    },
+    {
+      "frame_id": 600,
+      "case": "no revisit exists: false candidate"
+    }
+  ],
+  "gif_frames": 110,
+  "gif_size_mb": 9.79,
+  "gif_render_seconds": 249.7,
+  "outputs": {
+    "topk_gallery": "kitti_00_cam2_topk_gallery.png",
+    "candidate_trajectory": "kitti_00_cam2_candidate_trajectory.png",
+    "retrieval_matrix": "kitti_00_cam2_retrieval_matrix.png",
+    "recall_curve": "kitti_00_cam2_recall_at_k.png",
+    "retrieval_gif": "kitti_00_cam2_retrieval.gif"
+  }
+}
