@@ -1,0 +1,12 @@
+# DINOv2 baseline (Phase 5). Inherits every value from default.yaml.
+# For KITTI: --set dataset.name=kitti dataset.root=data/raw/kitti/dataset dataset.sequence='00'
+extends: default.yaml
+
+encoder: dinov2
+
+dinov2:
+  checkpoint: vitb14     # official dinov2_vitb14_pretrain.pth (no registers)
+  precision: auto        # auto: bf16 if native, else benchmark fp16 vs fp32 on GPU; fp32 on CPU
+  resize_mode: squash    # same preprocessing as I-JEPA for a like-for-like comparison
+  image_size: 224        # 16 x 16 patches of 14 px (I-JEPA ViT-H/14 also uses 224 px)
+  pooling: cls           # cls ([CLS] token) | mean (patch tokens)

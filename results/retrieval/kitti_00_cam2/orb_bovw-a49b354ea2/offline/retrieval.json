@@ -1,0 +1,78 @@
+{
+  "config": {
+    "top_k": 10,
+    "temporal_exclusion_frames": 100,
+    "temporal_exclusion_seconds": null,
+    "min_similarity": null,
+    "nms_frames": 0,
+    "mode": "offline"
+  },
+  "timing": {
+    "index_build_s": 0.003463,
+    "search_s": 0.133905,
+    "total_s": 0.137373,
+    "search_ms_per_query": 0.14731
+  },
+  "dataset_key": "kitti_00_cam2",
+  "queries": 909,
+  "encoder": {
+    "name": "orb_bovw",
+    "vocabulary_digest": "d0075f2b4955",
+    "vocabulary_size": 1000,
+    "vocabulary_fit_sources": [
+      {
+        "dataset_key": "kitti_05_cam2",
+        "frames": 553,
+        "stride": 5
+      }
+    ],
+    "orb": {
+      "n_features": 1000,
+      "scale_factor": 1.2,
+      "n_levels": 8,
+      "edge_threshold": 31,
+      "fast_threshold": 20
+    },
+    "tfidf": true,
+    "l2_normalized": true,
+    "embedding_dim": 1000,
+    "runtime": {
+      "device": "cpu",
+      "precision": "fp32"
+    }
+  },
+  "fingerprint": "a49b354ea2",
+  "causal_check": {
+    "other_mode": "causal",
+    "identical_candidates": true,
+    "max_score_diff": 0.0,
+    "other_timing": {
+      "index_build_s": 0.057859,
+      "search_s": 0.177232,
+      "total_s": 0.235446,
+      "search_ms_per_query": 0.194975
+    }
+  },
+  "ground_truth": {
+    "distance_only": {
+      "spatial_threshold_m": 5.0,
+      "max_heading_diff_deg": null,
+      "positive_queries": 162,
+      "recall_at_k_preliminary": {
+        "1": 0.9012345679012346,
+        "5": 0.9135802469135802,
+        "10": 0.9320987654320988
+      }
+    },
+    "same_direction": {
+      "spatial_threshold_m": 5.0,
+      "max_heading_diff_deg": 30.0,
+      "positive_queries": 150,
+      "recall_at_k_preliminary": {
+        "1": 0.9733333333333334,
+        "5": 0.9866666666666667,
+        "10": 1.0
+      }
+    }
+  }
+}

@@ -173,6 +173,14 @@ class VisualSequenceDataset(ABC):
     def get_image(self, index: int) -> np.ndarray:
         return self._load_image(self.frame_id(index))
 
+    def image_for_frame_id(self, frame_id: int) -> np.ndarray:
+        """Image of an *original* frame ID of the sampled view (not an array index)."""
+        frame_id = int(frame_id)
+        pos = int(np.searchsorted(self._frame_ids, frame_id))
+        if pos >= self._frame_ids.size or self._frame_ids[pos] != frame_id:
+            raise KeyError(f"frame ID {frame_id} is not in the sampled view")
+        return self._load_image(frame_id)
+
     def get_pose(self, index: int) -> np.ndarray | None:
         pose = self._pose_for(self.frame_id(index))
         return None if pose is None else pose.copy()

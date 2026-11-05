@@ -1,0 +1,122 @@
+{
+  "config": {
+    "orb": {
+      "n_features": 2000,
+      "scale_factor": 1.2,
+      "n_levels": 8,
+      "edge_threshold": 31,
+      "fast_threshold": 20
+    },
+    "matching": {
+      "ratio": 0.8,
+      "max_hamming": 64,
+      "mutual": true
+    },
+    "min_keypoints": 50,
+    "min_matches": 20,
+    "twin_hamming": 24,
+    "twin_min_px": 16,
+    "max_repeated_fraction": 0.5,
+    "estimator": "numpy",
+    "ransac_threshold_px": 1.0,
+    "ransac_confidence": 0.999,
+    "ransac_max_iters": 2000,
+    "min_inliers": 30,
+    "min_inlier_ratio": 0.3,
+    "coverage_grid": [
+      8,
+      4
+    ],
+    "min_coverage": 0.1,
+    "homography_diagnostic": true,
+    "homography_threshold_px": 2.0,
+    "homography_dominance": 0.9,
+    "rotation_tolerance": 0.05,
+    "pure_rotation_min_deg": 2.0,
+    "min_parallax_deg": 1.0,
+    "degenerate_policy": "flag",
+    "seed": 0
+  },
+  "verify_top_k": 1,
+  "timing": {
+    "total_s": 10.10270664500058,
+    "pairs": 250,
+    "ms_per_pair_including_orb": 40.41082658000232,
+    "median_ms_match": 0.805,
+    "median_ms_ransac": 28.591,
+    "median_ms_pose": 2.1605,
+    "orb_frames": 296,
+    "orb_ms_per_frame": 7.311270043902442
+  },
+  "summary": {
+    "dataset_key": "synthetic_5cb1448a",
+    "queries": 300,
+    "device": "cpu",
+    "pairs": {
+      "pairs": 250,
+      "accepted": 112,
+      "positive_pairs": 113,
+      "negative_pairs": 129,
+      "ignored_pairs": 8,
+      "true_accepts": 108,
+      "false_rejects": 5,
+      "false_accepts": 0,
+      "true_rejects": 129,
+      "accept_rate_positive": 0.9557522123893806,
+      "accept_rate_negative": 0.0,
+      "reasons_positive": {
+        "accepted": 108,
+        "too_few_inliers": 3,
+        "repeated_structure": 1,
+        "missing_descriptors": 1
+      },
+      "reasons_negative": {
+        "too_few_inliers": 49,
+        "insufficient_matches": 47,
+        "ransac_failure": 24,
+        "missing_descriptors": 8,
+        "repeated_structure": 1
+      },
+      "median_inliers_positive": 100.0,
+      "median_inliers_negative": 0.0,
+      "degenerate_flags": {
+        "low_parallax": 72,
+        "planar_scene": 36
+      },
+      "top1": {
+        "pairs": 250,
+        "accepted": 112,
+        "positive_pairs": 113,
+        "negative_pairs": 129,
+        "ignored_pairs": 8,
+        "true_accepts": 108,
+        "false_rejects": 5,
+        "false_accepts": 0,
+        "true_rejects": 129,
+        "accept_rate_positive": 0.9557522123893806,
+        "accept_rate_negative": 0.0,
+        "reasons_positive": {
+          "accepted": 108,
+          "too_few_inliers": 3,
+          "repeated_structure": 1,
+          "missing_descriptors": 1
+        },
+        "reasons_negative": {
+          "too_few_inliers": 49,
+          "insufficient_matches": 47,
+          "ransac_failure": 24,
+          "missing_descriptors": 8,
+          "repeated_structure": 1
+        },
+        "median_inliers_positive": 100.0,
+        "median_inliers_negative": 0.0,
+        "degenerate_flags": {
+          "low_parallax": 72,
+          "planar_scene": 36
+        }
+      }
+    },
+    "queries_with_accepted_loop": 112
+  },
+  "retrieval_dir": "/mnt/e/project_ws/jepa_slam/results/retrieval/synthetic_5cb1448a/ijepa-d49bc21384/offline"
+}

@@ -1,0 +1,72 @@
+{
+  "config": {
+    "top_k": 10,
+    "temporal_exclusion_frames": 100,
+    "temporal_exclusion_seconds": null,
+    "min_similarity": null,
+    "nms_frames": 0,
+    "mode": "offline"
+  },
+  "timing": {
+    "index_build_s": 0.001338,
+    "search_s": 0.022597,
+    "total_s": 0.023941,
+    "search_ms_per_query": 0.075324
+  },
+  "dataset_key": "synthetic_5cb1448a",
+  "queries": 300,
+  "encoder": {
+    "name": "hsv",
+    "bins_hsv": [
+      16,
+      4,
+      4
+    ],
+    "grid": [
+      1,
+      1
+    ],
+    "work_width": 320,
+    "transform": "per-cell normalised histogram -> sqrt (Hellinger)",
+    "l2_normalized": true,
+    "embedding_dim": 256,
+    "runtime": {
+      "device": "cpu",
+      "precision": "fp32"
+    }
+  },
+  "fingerprint": "f324a221ce",
+  "causal_check": {
+    "other_mode": "causal",
+    "identical_candidates": true,
+    "max_score_diff": 0.0,
+    "other_timing": {
+      "index_build_s": 0.011318,
+      "search_s": 0.02179,
+      "total_s": 0.033181,
+      "search_ms_per_query": 0.072635
+    }
+  },
+  "ground_truth": {
+    "distance_only": {
+      "spatial_threshold_m": 5.0,
+      "max_heading_diff_deg": null,
+      "positive_queries": 115,
+      "recall_at_k_preliminary": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      }
+    },
+    "same_direction": {
+      "spatial_threshold_m": 5.0,
+      "max_heading_diff_deg": 30.0,
+      "positive_queries": 115,
+      "recall_at_k_preliminary": {
+        "1": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      }
+    }
+  }
+}

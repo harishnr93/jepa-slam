@@ -1,0 +1,170 @@
+{
+  "phase": 4,
+  "dataset_key": "kitti_00_cam2",
+  "queries": 909,
+  "frame_stride": 5,
+  "verify_top_k": 5,
+  "verification_config": {
+    "orb": {
+      "n_features": 2000,
+      "scale_factor": 1.2,
+      "n_levels": 8,
+      "edge_threshold": 31,
+      "fast_threshold": 20
+    },
+    "matching": {
+      "ratio": 0.8,
+      "max_hamming": 64,
+      "mutual": true
+    },
+    "min_keypoints": 50,
+    "min_matches": 20,
+    "twin_hamming": 24,
+    "twin_min_px": 16,
+    "max_repeated_fraction": 0.5,
+    "estimator": "opencv",
+    "ransac_threshold_px": 1.0,
+    "ransac_confidence": 0.999,
+    "ransac_max_iters": 2000,
+    "min_inliers": 30,
+    "min_inlier_ratio": 0.3,
+    "coverage_grid": [
+      8,
+      4
+    ],
+    "min_coverage": 0.1,
+    "homography_diagnostic": true,
+    "homography_threshold_px": 2.0,
+    "homography_dominance": 0.9,
+    "rotation_tolerance": 0.05,
+    "pure_rotation_min_deg": 2.0,
+    "min_parallax_deg": 1.0,
+    "degenerate_policy": "flag",
+    "seed": 0
+  },
+  "verification_dir": "/mnt/e/project_ws/jepa_slam/results/verification/kitti_00_cam2/ijepa-d49bc21384/offline/top5_opencv",
+  "loaded_saved_result": true,
+  "timing": {
+    "total_s": 922.181797661,
+    "pairs": 4435,
+    "ms_per_pair_including_orb": 207.93276159210825,
+    "median_ms_match": 8.418,
+    "median_ms_ransac": 216.4495,
+    "median_ms_pose": 22.383499999999998,
+    "orb_frames": 909,
+    "orb_ms_per_frame": 93.1722459714521
+  },
+  "pairs": {
+    "pairs": 4435,
+    "accepted": 449,
+    "positive_pairs": 300,
+    "negative_pairs": 3943,
+    "ignored_pairs": 192,
+    "true_accepts": 300,
+    "false_rejects": 0,
+    "false_accepts": 6,
+    "true_rejects": 3937,
+    "accept_rate_positive": 1.0,
+    "accept_rate_negative": 0.001521683996956632,
+    "reasons_positive": {
+      "accepted": 300
+    },
+    "reasons_negative": {
+      "too_few_inliers": 3463,
+      "insufficient_matches": 467,
+      "concentrated_inliers": 7,
+      "accepted": 6
+    },
+    "median_inliers_positive": 397.5,
+    "median_inliers_negative": 9.0,
+    "degenerate_flags": {
+      "low_parallax": 273,
+      "planar_scene": 14,
+      "pure_rotation": 2
+    }
+  },
+  "top1": {
+    "pairs": 889,
+    "accepted": 138,
+    "positive_pairs": 126,
+    "negative_pairs": 746,
+    "ignored_pairs": 17,
+    "true_accepts": 126,
+    "false_rejects": 0,
+    "false_accepts": 1,
+    "true_rejects": 745,
+    "accept_rate_positive": 1.0,
+    "accept_rate_negative": 0.0013404825737265416,
+    "reasons_positive": {
+      "accepted": 126
+    },
+    "reasons_negative": {
+      "too_few_inliers": 661,
+      "insufficient_matches": 84,
+      "accepted": 1
+    },
+    "median_inliers_positive": 511.0,
+    "median_inliers_negative": 9.0,
+    "degenerate_flags": {
+      "low_parallax": 95,
+      "planar_scene": 3,
+      "pure_rotation": 2
+    }
+  },
+  "examples": [
+    {
+      "case": "True revisit, accepted (median inlier count)",
+      "query": 3840,
+      "candidate": 935,
+      "reason": "accepted",
+      "inliers": 514,
+      "reverified_identically": true
+    },
+    {
+      "case": "Confident false candidate, rejected by geometry",
+      "query": 4540,
+      "candidate": 55,
+      "reason": "too_few_inliers",
+      "inliers": 8,
+      "reverified_identically": true
+    },
+    {
+      "case": "False candidate, accepted (false positive)",
+      "query": 2475,
+      "candidate": 355,
+      "reason": "accepted",
+      "inliers": 32,
+      "reverified_identically": true
+    },
+    {
+      "case": "Accepted, degenerate geometry flagged",
+      "query": 1590,
+      "candidate": 145,
+      "reason": "accepted",
+      "inliers": 1273,
+      "reverified_identically": true
+    },
+    {
+      "case": "True revisit, accepted (most inliers)",
+      "query": 1595,
+      "candidate": 150,
+      "reason": "accepted",
+      "inliers": 1221,
+      "reverified_identically": true
+    }
+  ],
+  "gif_pairs": 16,
+  "gif_frames": 176,
+  "gif_size_mb": 3.1,
+  "gif_render_seconds": 35.9,
+  "outputs": {
+    "orb_keypoints": "kitti_00_cam2_orb_keypoints.png",
+    "raw_matches": "kitti_00_cam2_raw_matches.png",
+    "ransac_inliers": "kitti_00_cam2_ransac_inliers.png",
+    "ransac_rejected": "kitti_00_cam2_ransac_rejected.png",
+    "decision_gallery": "kitti_00_cam2_decision_gallery.png",
+    "statistics": "kitti_00_cam2_verification_stats.png",
+    "trajectory": "kitti_00_cam2_verified_trajectory.png",
+    "verification_gif": "kitti_00_cam2_verification.gif"
+  }
+}

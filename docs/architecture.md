@@ -1,6 +1,6 @@
 # Architecture
 
-Status: Phase 3. This document grows with each phase.
+Status: Phase 5. This document grows with each phase.
 
 ## Module map
 
@@ -22,6 +22,8 @@ flowchart LR
         ebase[base.py<br/>VisualEncoder]
         vit[vit.py<br/>ViT-H/14, sincos pos-embed]
         ijepa[ijepa.py<br/>IJEPAEncoder, checkpoint extraction]
+        dino[dinov2.py<br/>DINOv2Encoder, DinoViT]
+        classical[classical.py<br/>HSV histogram, ORB BoVW,<br/>vocabulary + dev-only guard]
     end
     subgraph features
         extraction[extraction.py<br/>batching, prefetch,<br/>OOM recovery, CPU fallback]
@@ -33,6 +35,11 @@ flowchart LR
         temporal[temporal_filter.py<br/>eligible prefix by frame ID / time]
         detector[detector.py<br/>offline + causal retrieve,<br/>candidate filtering]
     end
+    subgraph verification
+        orb[orb.py<br/>ORB, Hamming kNN,<br/>ratio + mutual, twin fraction]
+        geometry[geometry.py<br/>essential-matrix RANSAC<br/>OpenCV 5-pt / own 8-pt,<br/>degeneracy, decisions]
+        vpipe[pipeline.py<br/>FeatureStore, verify_candidates,<br/>VerificationRun, label_pairs]
+    end
     subgraph evaluation
         metrics[metrics.py<br/>roc_auc, recall_at_k]
         profiling[profiling.py<br/>Profiler]
@@ -42,6 +49,9 @@ flowchart LR
         traj[trajectory.py]
         anim[animations.py]
         emb[embeddings.py + phase2.py]
+        ret[retrieval.py + phase3.py]
+        mat[matches.py + phase4.py]
+        base5[baselines.py + phase5.py]
     end
     ijepa --> vit
     ijepa --> ebase
@@ -55,6 +65,17 @@ flowchart LR
     detector --> index
     detector --> temporal
     detector --> cache
+    geometry --> orb
+    dino --> vit
+    dino --> ebase
+    classical --> ebase
+    classical --> orb
+    base5 --> detector
+    base5 --> cache
+    vpipe --> geometry
+    vpipe --> detector
+    vpipe --> gt
+    mat --> vpipe
     kitti --> base
     synthetic --> base
     kitti --> gt
@@ -155,3 +176,57 @@ sequenceDiagram
 6. **Eligibility is a prefix.** Frames are indexed chronologically, so every query's eligible set
    is `[0, n_q)`, enforced inside FAISS with `IDSelectorRange`. Offline evaluation and causal
    replay are therefore exactly equivalent, which is tested.
+
+## Data flow (Phase 4)
+
+```mermaid
+sequenceDiagram
+    participant CLI as run_verification.py
+    participant R as RetrievalResult (Phase 3)
+    participant F as FeatureStore (ORB per frame ID)
+    participant V as verify_features
+    participant GT as label_pairs
+    CLI->>R: load results/retrieval/.../<mode>/
+    loop each query q, rank 1..verify_top_k
+        CLI->>F: ORB(q), ORB(candidate) (computed once per frame)
+        CLI->>V: features + CameraCalibration
+        V->>V: twin fraction, ratio + mutual matching
+        V->>V: essential-matrix RANSAC (Sampson, 1 px), recoverPose
+        V->>V: homography diagnostic, parallax, degeneracy flag
+        V-->>CLI: accepted / first failing reason + diagnostics
+    end
+    Note over CLI,GT: poses are used only after all decisions, to label pairs
+    CLI->>GT: distance -> true revisit (<= 5 m) / not (> 25 m) / unlabelled
+    CLI-->>CLI: save verification.csv / decisions.csv / verification.json (top<K>_<estimator>/)
+```
+
+7. **Decisions never see poses.** `verify_features`, `verify_pair` and `verify_candidates` take
+   images (or ORB features) and the calibration only; a test asserts that their signatures have
+   no pose or ground-truth argument. Labels are attached afterwards by `label_pairs`.
+8. **Figures re-derive, then check.** Phase 4 figures re-run verification with
+   `keep_details=True` for the pairs they draw and fail unless the decision and inlier count
+   match the saved run exactly (RANSAC is seeded, so this is deterministic).
+
+## Phase 5: one interface, four descriptors
+
+```mermaid
+flowchart LR
+    F[frames of one sequence] --> I[I-JEPA ViT-H/14<br/>patch mean]
+    F --> D[DINOv2 ViT-B/14<br/>CLS token]
+    F --> H[HSV histogram<br/>sqrt-normalised]
+    F --> O[ORB bag of words<br/>tf-idf]
+    V[(vocabulary fitted on<br/>splits.dev only)] --> O
+    I & D & H & O --> C[EmbeddingCache<br/>key = dataset + encoder fingerprint]
+    C --> R[retrieve: same exclusion,<br/>top-K, offline / causal]
+    R --> S[retrieval.npz per method]
+    S --> E[Recall@K, AUC, figures]
+```
+
+9. **Development and test data are separated in configuration.** `splits.dev` (00, 05) may be
+   used for fitting and tuning; `splits.test` (02, 06, 08, 09) may not. `vocabulary_plan`
+   refuses to fit on anything but development sequences, and the vocabulary digest and fit
+   sources are part of the ORB-BoVW fingerprint.
+10. **Baselines share every stage but the descriptor.** All encoders implement `VisualEncoder`
+    (L2-normalised float32 output), so caching, FAISS retrieval, saved-result format and
+    metrics are the same code for every method.
+

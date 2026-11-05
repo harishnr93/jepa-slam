@@ -21,19 +21,35 @@ from latent_loop.visualization.plots import (
 )
 
 
-def save_gif(frames: Sequence[np.ndarray], path: str | Path, fps: float = 10.0) -> Path:
+def save_gif(
+    frames: Sequence[np.ndarray],
+    path: str | Path,
+    fps: float = 10.0,
+    reserve_colors: Sequence[str] = (),
+    colors: int = 256,
+) -> Path:
     """Write RGB frames as a looping GIF.
 
-    One 256-colour palette is fitted on a strip of up to 8 evenly spaced frames and
-    applied to every frame without dithering; dithering noise defeats LZW compression.
+    One palette of ``colors`` entries (256 by default) is fitted on a strip of up to 8
+    evenly spaced frames and applied to every frame without dithering; dithering noise
+    defeats LZW compression.
+    ``reserve_colors`` (hex) are added to the fitting strip as solid blocks, so small but
+    meaningful marks (e.g. one colour per method) keep their exact colour.
     """
     if not frames:
         raise ValueError("No frames to write")
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     picks = np.unique(np.linspace(0, len(frames) - 1, min(8, len(frames))).round().astype(int))
-    strip = Image.fromarray(np.concatenate([frames[i] for i in picks], axis=0))
-    palette = strip.quantize(colors=256, method=Image.Quantize.MEDIANCUT)
+    rows = [frames[i] for i in picks]
+    if reserve_colors:
+        w = frames[0].shape[1]
+        block = max(1, frames[0].shape[0] // 2)
+        for c in reserve_colors:
+            rgb = [int(c.lstrip("#")[k : k + 2], 16) for k in (0, 2, 4)]
+            rows.append(np.full((block, w, 3), rgb, np.uint8))
+    strip = Image.fromarray(np.concatenate(rows, axis=0))
+    palette = strip.quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
     images = [
         Image.fromarray(f).quantize(palette=palette, dither=Image.Dither.NONE) for f in frames
     ]

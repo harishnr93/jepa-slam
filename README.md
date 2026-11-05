@@ -4,10 +4,11 @@
 
 Self-supervised visual place recognition and loop closure detection using JEPA representations, geometric verification, and reproducible SLAM benchmarks.
 
-> **Status: Phase 3 of 8 complete** (dataset infrastructure, frozen I-JEPA features and
-> visual place retrieval). Retrieval results below are preliminary Recall@K checks on positive
-> queries; loop-closure *detection* metrics (thresholds, false alarms, dev/test split) arrive
-> in Phase 6. Figures are labelled **SYNTHETIC** (procedurally rendered
+> **Status: Phase 5 of 8 complete** (dataset infrastructure, frozen I-JEPA features, visual
+> place retrieval, ORB + essential-matrix geometric verification, and DINOv2 / HSV /
+> ORB-bag-of-words baselines). Results below are preliminary checks with untuned settings on
+> development data; loop-closure *detection* metrics (tuned thresholds, false alarms, held-out
+> test sequences) arrive in Phase 6. Figures are labelled **SYNTHETIC** (procedurally rendered
 > city, see [Synthetic dataset](#synthetic-dataset-with-known-revisits)) or **KITTI** (real
 > KITTI Odometry imagery, downloaded as described in [Dataset preparation](#dataset-preparation)).
 
@@ -29,8 +30,14 @@ Self-supervised visual place recognition and loop closure detection using JEPA r
 12. [Phase 3: visual place retrieval](#phase-3-visual-place-retrieval)
 13. [Steps to run Phase 3](#steps-to-run-phase-3)
 14. [Phase 3 results](#phase-3-results)
-15. [Troubleshooting](#troubleshooting)
-16. [References](#references)
+15. [Phase 4: geometric verification](#phase-4-geometric-verification)
+16. [Steps to run Phase 4](#steps-to-run-phase-4)
+17. [Phase 4 results](#phase-4-results)
+18. [Phase 5: baseline comparison](#phase-5-baseline-comparison)
+19. [Steps to run Phase 5](#steps-to-run-phase-5)
+20. [Phase 5 results](#phase-5-results)
+21. [Troubleshooting](#troubleshooting)
+22. [References](#references)
 
 ---
 
@@ -72,10 +79,10 @@ flowchart TD
     J --> K3[Streamlit dashboard]
     GT[(Ground-truth poses)] -. labelling and evaluation only .-> K1
     classDef done fill:#2f855a,stroke:#1c4532,color:#ffffff,stroke-width:2px
-    class A,B,C,D1,E,F,G,H done
+    class A,B,C,D1,D2,D3,E,F,G,H,I done
 ```
 
-Green boxes are implemented (Phases 1–3). Ground-truth poses are only ever used for labelling,
+Green boxes are implemented (Phases 1–5). Ground-truth poses are only ever used for labelling,
 evaluation and visualisation, never to select retrieval candidates. See
 [docs/architecture.md](docs/architecture.md) for the module map.
 
@@ -86,8 +93,8 @@ evaluation and visualisation, never to select retrieval candidates. See
 | 1 | Environment and dataset infrastructure | ✅ | ✅ 51 passed | ✅ | ✅ | ✅ | **Complete** (synthetic data + KITTI-layout fixtures; real KITTI 00/02/05/06/08/09 downloaded and validated later) |
 | 2 | I-JEPA feature extraction | ✅ | ✅ 90 passed (all phases; 39 new) | ✅ | ✅ | ✅ | **Complete** (official checkpoint verified against Meta's code; synthetic + KITTI 00) |
 | 3 | Visual place retrieval | ✅ | ✅ 108 passed (all phases; 18 new) | ✅ | ✅ | ✅ | **Complete** (FAISS exact retrieval, causal replay verified identical; synthetic + KITTI 00) |
-| 4 | Geometric verification | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | Not started |
-| 5 | Baseline comparison | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | Not started |
+| 4 | Geometric verification | ✅ | ✅ 137 passed (all phases; 29 new) | ✅ | ✅ | ✅ | **Complete** (ORB + five-point RANSAC, own eight-point RANSAC cross-checked, degeneracy handling; synthetic + KITTI 00) |
+| 5 | Baseline comparison | ✅ | ✅ 151 passed (all phases; 14 new) | ✅ | ✅ | ✅ | **Complete** (DINOv2 ViT-B/14 bitwise-verified against Meta's code, HSV, ORB bag of words with a development-only vocabulary; synthetic + KITTI 00) |
 | 6 | Benchmarking and evaluation | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | Not started |
 | 7 | Streamlit dashboard | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | Not started |
 | 8 | Final integration and release | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | Not started |
@@ -134,26 +141,32 @@ dependencies for non-editable installs.
 In VS Code, choose **Python: Select Interpreter** → `.env/bin/python` so that diagnostics see
 the installed packages.
 
-### Repository layout (Phases 1–3)
+### Repository layout (Phases 1–5)
 
 ```text
-configs/            default.yaml (synthetic), kitti.yaml, ijepa.yaml (each extends default)
+configs/            default.yaml (synthetic), kitti.yaml, ijepa.yaml, dinov2.yaml (extend default)
 src/latent_loop/
   datasets/         base.py, kitti.py, kitti_download.py, synthetic.py, ground_truth.py
-  encoders/         base.py (VisualEncoder), vit.py, ijepa.py
+  encoders/         base.py (VisualEncoder), vit.py, ijepa.py, dinov2.py, classical.py
   features/         extraction.py, pooling.py, cache.py
   retrieval/        index.py (FAISS), temporal_filter.py, detector.py
+  verification/     orb.py, geometry.py, pipeline.py
   evaluation/       metrics.py, profiling.py
   utils/            config.py, logging.py, device.py
   visualization/    plots.py, trajectory.py, animations.py, embeddings.py, phase2.py,
-                    retrieval.py, phase3.py
+                    retrieval.py, phase3.py, matches.py, phase4.py, baselines.py, phase5.py
 scripts/            check_environment.py, prepare_dataset.py, download_kitti.py,
                     download_checkpoints.py, extract_embeddings.py, verify_ijepa.py,
-                    run_retrieval.py, generate_visualizations.py
+                    verify_dinov2.py, fit_vocabulary.py, profile_encoders.py,
+                    run_retrieval.py, run_verification.py, compare_ransac.py,
+                    generate_visualizations.py
 tests/              conftest.py + test_{datasets,ground_truth,config,visualization,kitti_download,
-                    encoders,features,metrics,embedding_plots,retrieval,retrieval_plots}.py
-assets/phase_0{1,2,3}_*/   committed figures and GIFs
-data/ checkpoints/ results/ .env/                  git-ignored (datasets, weights, caches, venv)
+                    encoders,features,metrics,embedding_plots,retrieval,retrieval_plots,
+                    verification,verification_plots,baselines,baseline_plots}.py
+assets/phase_0{1..5}_*/    committed figures and GIFs
+results/            run outputs: retrieval/ and verification/ (small, trackable);
+                    metrics/, plots/, examples/ are git-ignored
+data/ checkpoints/ .env/           git-ignored (datasets, weights, caches, venv)
 ```
 
 ## Dataset preparation
@@ -439,7 +452,7 @@ unset (see [Installation](#environment-setup)). Each has been run on the machine
 # 1. Inspect the environment (writes results/metrics/environment.json)
 python scripts/check_environment.py
 
-# 2. Run the tests (Phase 1: 51 tests; whole suite after Phase 3: 108 tests, ~4 min on /mnt/e)
+# 2. Run the tests (Phase 1: 51 tests; whole suite after Phase 5: 151 tests, ~4 min on /mnt/e)
 python -m pytest
 
 # 3. Lint and format check
@@ -1006,6 +1019,556 @@ These are **preliminary** retrieval checks on positive queries only. They are no
 |---|---|
 | ![Synthetic retrieval GIF](assets/phase_03_retrieval/synthetic_5cb1448a_retrieval.gif) | ![KITTI 00 retrieval GIF](assets/phase_03_retrieval/kitti_00_cam2_retrieval.gif) |
 
+## Phase 4: geometric verification
+
+### Objective
+
+Reject loop-closure candidates that *look* similar but are not views of the same 3D scene. For each query and each of its top `verify_top_k` retrieved candidates (5 by default), the two images are matched with ORB features and the matches are tested against the two-view epipolar constraint of a calibrated camera with RANSAC. The decision uses **only the two images and the camera calibration**. Ground-truth poses are attached afterwards, as labels for the figures and statistics.
+
+### ORB keypoints and binary descriptors
+
+ORB (Rublee et al., 2011) detects **oriented FAST** corners on an 8-level image pyramid (scale factor 1.2), keeps the strongest 2000 by Harris score, and assigns each an orientation $\theta$ from the intensity centroid of its patch:
+
+```math
+m_{pq} = \sum_{x,y} x^p y^q\, I(x,y), \qquad \theta = \mathrm{atan2}(m_{01},\, m_{10}).
+```
+
+The descriptor is **rotated BRIEF**: 256 learned pairwise intensity tests $(\mathbf{a}_k, \mathbf{b}_k)$ on the smoothed patch, rotated by $\theta$,
+
+```math
+d_k = \begin{cases} 1 & I(R_\theta \mathbf{a}_k) < I(R_\theta \mathbf{b}_k) \\ 0 & \text{otherwise} \end{cases}, \qquad k = 1,\dots,256,
+```
+
+stored as 32 bytes. Binary descriptors are compact and fast to compare, and the orientation and pyramid make them tolerant to in-plane rotation and moderate scale change. They are *not* invariant to large viewpoint or illumination changes, which limits verification of crossing or opposite-direction revisits.
+
+### Hamming distance and matching
+
+Two binary descriptors are compared by the **Hamming distance**, the number of differing bits:
+
+```math
+d_H(\mathbf{a}, \mathbf{b}) = \mathrm{popcount}(\mathbf{a} \oplus \mathbf{b}) \in \{0, \dots, 256\}.
+```
+
+Matching from the query image into the candidate image (`verification/orb.py`):
+
+1. **Exact 2-nearest-neighbour search** by Hamming distance (OpenCV brute force), giving the best and second-best distances $d_1, d_2$.
+2. **Lowe's ratio test**: keep the match only if $d_1 < r   d_2$ with $r$ = 0.8. A feature whose best and second-best candidates are almost equally good is ambiguous and is dropped.
+3. **Absolute bound** $d_1 \le 64$ bits.
+4. **Mutual check**: the candidate feature's own best match in the query image must be the same query feature. This also removes many-to-one matches.
+
+### Epipolar geometry and the essential matrix
+
+With calibrated intrinsics $K$ (KITTI: from `calib.txt`, the rectified $P_2$ of the colour camera), a pixel $\mathbf{u}$ maps to the normalised image point $\mathbf{x} = K^{-1}[\mathbf{u}^\top, 1]^\top$. If the camera moved rigidly between the two views, $\mathbf{X}_r = R \mathbf{X}_q + \mathbf{t}$, every correct correspondence satisfies the **epipolar constraint**
+
+```math
+\mathbf{x}_r^\top E \, \mathbf{x}_q = 0, \qquad E = [\mathbf{t}]_\times R, \qquad
+[\mathbf{t}]_\times = \begin{pmatrix} 0 & -t_3 & t_2 \\ t_3 & 0 & -t_1 \\ -t_2 & t_1 & 0 \end{pmatrix}.
+```
+
+Geometrically, the query point, the two camera centres and the 3D point lie in one plane, so the match must lie on the **epipolar line** $\mathbf{l}_r = F \mathbf{u}_q$ in the candidate image, with $F = K^{-\top} E K^{-1}$. An essential matrix has singular values $(\sigma, \sigma, 0)$ and 5 degrees of freedom (3 for rotation, 2 for the translation direction).
+
+**Scale is not observable.** $E$ is defined only up to scale, and $\mathbf{t}$ is recovered only as a **unit direction**. This verification does **not** estimate metric translation; a metric relative pose would need depth (stereo, LiDAR or a map).
+
+The residual used to classify a match is the **Sampson distance**, a first-order approximation of the geometric (point-to-epipolar-line) error:
+
+```math
+d_S^2 = \frac{(\mathbf{x}_r^\top E \mathbf{x}_q)^2}{(E\mathbf{x}_q)_1^2 + (E\mathbf{x}_q)_2^2 + (E^\top\mathbf{x}_r)_1^2 + (E^\top\mathbf{x}_r)_2^2}.
+```
+
+It is in normalised units; a pixel threshold $\epsilon$ (1 px) is divided by the focal length.
+
+### RANSAC
+
+Tentative matches contain outliers, so $E$ is estimated robustly:
+
+1. Draw a random minimal sample of $s$ matches and fit $E$ to it.
+2. Count the matches with $d_S < \epsilon$ (the **support**).
+3. Keep the model with the largest support. Stop when, with the best inlier fraction $w$ seen so far, the probability of having drawn at least one all-inlier sample reaches the confidence $p$ = 0.999:
+
+```math
+N = \frac{\log(1 - p)}{\log\left(1 - w^{s}\right)} .
+```
+
+Two estimators are implemented (`verification.estimator`):
+
+| Estimator | Minimal solver | Notes |
+|---|---|---|
+| `opencv` (default) | Nistér's five-point algorithm, $s = 5$ (`cv2.findEssentialMat`) | Standard, robust to noise; up to 2000 iterations |
+| `numpy` | Normalised linear **eight-point** algorithm, $s = 8$, own code | Transparent reference: vectorised batches of hypotheses, Hartley normalisation, projection onto the essential manifold, adaptive stopping and LO-RANSAC refinement (Sampson-weighted iteratively reweighted least squares) |
+
+The eight-point algorithm stacks one row per match, $A \mathrm{vec}(E) = 0$ with rows $(x_r x_q,  x_r y_q,  x_r,  y_r x_q,  y_r y_q,  y_r,  x_q,  y_q,  1)$, solves by SVD, and projects the result onto the closest essential matrix $U \mathrm{diag}(1, 1, 0) V^\top$. Minimal eight-point samples are sensitive to noise, so the local-optimisation step refits on the support with each row divided by its Sampson denominator, which turns the algebraic residual into the Sampson distance. On synthetic scenes with 40 % outliers and 0.4 px noise, the reference recovers on average 92 % as many true inliers as OpenCV's five-point solver with a similar false-inlier rate. The test suite checks both against ground truth.
+
+After RANSAC, `cv2.recoverPose` decomposes $E$ into the four $(R, \pm\mathbf{t})$ candidates and keeps the one that places the triangulated inliers in front of both cameras (cheirality).
+
+### Inlier count, inlier ratio and coverage
+
+* **Inlier count** $n_E$: matches with $d_S < \epsilon$ under the final model.
+* **Inlier ratio** $n_E / n_m$, with $n_m$ the number of ratio-tested mutual matches.
+* **Coverage**: the fraction of cells of an 8 × 4 image grid that contain at least one inlier, taking the smaller value of the two images. Inliers packed into one small region (a single sign or textured patch) give weak evidence that the *place* is the same.
+
+### Degenerate configurations
+
+| Case | Why it is a problem | How it is handled |
+|---|---|---|
+| **Missing descriptors** (blank, dark or motion-blurred frame) | No features to match | Fewer than 50 keypoints in either image: reject, `missing_descriptors` |
+| **Insufficient matches** | Too little evidence; RANSAC is meaningless | Fewer than 20 matches after the filters: reject, `insufficient_matches` |
+| **Repeated structure** (fences, tiled facades) | Matches shifted by one period can still be geometrically consistent, so RANSAC cannot catch them | Self-similarity: the **twin fraction** is the share of keypoints with a descriptor within 24 bits of another keypoint at least 16 px away in the *same* image. At ≥ 0.5 in either image: reject, `repeated_structure` |
+| **RANSAC failure** | No model, non-finite $E$, or fewer than 5 inliers | Reject, `ransac_failure` |
+| **Pure rotation** | With $\mathbf{t} \approx 0$, every match also satisfies $\mathbf{u}_r \sim K R K^{-1} \mathbf{u}_q$; any $\mathbf{t}$ fits, so $E$ and $\mathbf{t}$ are undetermined | Homography test below: flag `pure_rotation`, pose unreliable |
+| **Low parallax** (almost the same viewpoint, or distant scene) | Same as pure rotation, with a small rotation | Homography test, or median rotation-compensated parallax below 1°: flag `low_parallax` |
+| **Planar scene** | One homography explains the matches; pose is less well conditioned (and the eight-point solver is degenerate) | Homography test: flag `planar_scene` |
+| **Invalid calibration** | Normalised coordinates would be wrong | $K$ not finite, $f_x, f_y \le 0$, principal point outside the image, or bad last row: reject, `invalid_calibration` |
+
+**Homography diagnostic** (optional, on by default). A homography $H$ is fitted to the same matches with RANSAC (`cv2.findHomography`). Its threshold is 2 px rather than 1 px: the homography error is a one-sided 2D transfer error, while the Sampson distance is a 1D point-to-line error. The ratio of 95 % $\chi^2$ quantiles for 2 vs 1 degrees of freedom, $\sqrt{5.99/3.84} \approx 1.25$, times $\sqrt{2}$ for the noise of both images landing on one side, gives about 1.8. If $n_H / n_E \ge 0.9$, the matches are explained by one homography and the configuration is degenerate:
+
+* **Rotation-like** if $K^{-1} H K$ is close to a scaled rotation. Its singular values are then nearly equal, so the spread $(\sigma_1 - \sigma_3)/\sigma_2 \le 0.05$. The nearest rotation $R_H = UV^\top$ gives the turn angle: `pure_rotation` if it is ≥ 2°, otherwise `low_parallax`. Rotation and parallax are then reported from $R_H$, because $E$'s rotation is meaningless.
+* Otherwise **`planar_scene`**.
+
+Independently, the **rotation-compensated parallax** of each inlier is $\angle(\mathbf{f}_r, R \mathbf{f}_q)$ for unit bearing vectors $\mathbf{f}$. A median below 1° flags `low_parallax`.
+
+A degenerate configuration does **not** mean a wrong place: two images taken from almost the same spot are a correct loop closure whose relative pose happens to be unobservable. With `degenerate_policy: flag` (default), such pairs are accepted with `pose_reliable = false`. With `degenerate_policy: reject`, they are rejected with the degeneracy as the reason.
+
+### Verification thresholds and decision order
+
+Checks run in this order, and the first failure becomes the recorded rejection reason:
+
+1. `invalid_calibration`
+2. `missing_descriptors` (fewer than `min_keypoints` = 50)
+3. `repeated_structure` (twin fraction ≥ `max_repeated_fraction` = 0.5)
+4. `insufficient_matches` (fewer than `min_matches` = 20)
+5. `ransac_failure`
+6. `too_few_inliers` ($n_E$ < `min_inliers` = 30)
+7. `low_inlier_ratio` ($n_E / n_m$ < `min_inlier_ratio` = 0.3)
+8. `concentrated_inliers` (coverage < `min_coverage` = 0.1)
+9. `pure_rotation` / `low_parallax` / `planar_scene`, only with `degenerate_policy: reject`
+10. otherwise `accepted`
+
+The per-query loop-closure decision is the highest-ranked accepted candidate, if any.
+
+**These thresholds are common heuristic values, not tuned on KITTI.** Tuning them (and the retrieval similarity threshold) on development sequences only is part of Phase 6.
+
+### Configuration (`configs/default.yaml`, block `verification`)
+
+| Key | Default | Meaning |
+|---|---|---|
+| `verify_top_k` | 5 | candidates per query that are verified |
+| `orb.n_features` / `scale_factor` / `n_levels` / `fast_threshold` | 2000 / 1.2 / 8 / 20 | ORB detector |
+| `matching.ratio` / `max_hamming` / `mutual` | 0.8 / 64 / true | match filters |
+| `min_keypoints`, `min_matches` | 50, 20 | evidence minimums |
+| `twin_hamming`, `twin_min_px`, `max_repeated_fraction` | 24, 16, 0.5 | repeated-structure test |
+| `estimator` | `opencv` | `opencv` (five-point) or `numpy` (own eight-point RANSAC) |
+| `ransac_threshold_px`, `ransac_confidence`, `ransac_max_iters` | 1.0, 0.999, 2000 | RANSAC |
+| `min_inliers`, `min_inlier_ratio`, `min_coverage` (`coverage_grid` [8, 4]) | 30, 0.3, 0.1 | acceptance |
+| `homography_diagnostic`, `homography_threshold_px`, `homography_dominance` | true, 2.0, 0.9 | homography diagnostic |
+| `rotation_tolerance`, `pure_rotation_min_deg`, `min_parallax_deg` | 0.05, 2.0, 1.0 | degeneracy classification |
+| `degenerate_policy` | `flag` | `flag` (accept, mark pose unreliable) or `reject` |
+| `seed` | 0 | RANSAC seed (deterministic results) |
+
+### Implementation map
+
+| File | Contents |
+|---|---|
+| `src/latent_loop/verification/orb.py` | `OrbConfig`, `MatchConfig`, `extract_orb`, `hamming_distance`, `match_features` (ratio, Hamming bound, mutual check), `raw_nearest_matches`, `twin_fraction` |
+| `src/latent_loop/verification/geometry.py` | `VerificationConfig`, `eight_point`, `sampson_sq`, `ransac_essential_numpy`, `estimate_essential`, `recover_pose`, `homography_rotation_check`, `grid_coverage`, `verify_features`, `verify_pair`, `VerificationResult` |
+| `src/latent_loop/verification/pipeline.py` | `FeatureStore` (ORB per frame ID, LRU cache), `verify_candidates`, `VerificationRun` (`save`/`load`/`decisions`), `label_pairs`, `summarize` |
+| `src/latent_loop/visualization/matches.py`, `phase4.py` | Phase 4 figures and GIF |
+| `scripts/run_verification.py` | verification CLI; writes `results/verification/<dataset>/<encoder>-<fingerprint>/<mode>/top<K>_<estimator>/` |
+| `scripts/compare_ransac.py` | re-verifies the saved rank-1 pairs with both RANSAC backends; writes `results/metrics/ransac_comparison_<dataset>.json` |
+
+**Saved results** per run:
+* `verification.csv`: one row per verified pair, with every count, ratio, flag and stage timing, plus the ground-truth distance and label, added after the decisions.
+* `decisions.csv`: the accepted loop-closure frame per query, or −1.
+* `verification.json`: configuration, timing and summary.
+
+**CPU/GPU:** Phase 4 runs entirely on the **CPU** (OpenCV 4.14, NumPy). No neural network is loaded.
+
+### Assumptions, failure cases and limitations
+
+* **Viewpoint.** ORB is not invariant to large viewpoint changes, so crossing and opposite-direction revisits produce few matches and are rejected even when they are true revisits.
+* **Repeated structure is detected only when it dominates** (twin fraction ≥ 0.5). Partial repetition, such as identical windows on *different* buildings, can still yield a consistent but wrong epipolar geometry. The synthetic city shows such a case below.
+* **The epipolar test is a 1D constraint.** A random match lies within ε of *some* epipolar line more often than within ε of a point, so a minimum inlier count (not only a ratio) is needed.
+* **Degenerate pairs are accepted by default.** Their relative pose is unreliable and is flagged as such.
+* **No metric scale.** $\mathbf{t}$ is a direction only.
+* **Untuned thresholds.** The defaults are heuristic. Phase 6 tunes thresholds on development sequences and reports detection metrics on held-out sequences.
+
+## Steps to run Phase 4
+
+All commands run from the repository root with `.env` active and `PYTHONPATH` unset. Phase 4 reads the saved Phase 3 retrieval results, so run `scripts/run_retrieval.py` with the same `--stride`/`--set` first (see [Steps to run Phase 3](#steps-to-run-phase-3)). Everything runs on the **CPU**.
+
+```bash
+# 1. Verify the top-5 candidates of every query, SYNTHETIC (every 2nd frame; ~1 min)
+python scripts/run_verification.py --stride 2
+
+# 2. Same on real KITTI 00 (every 5th frame; 4435 pairs, ~16 min, mostly RANSAC on rejected pairs)
+python scripts/run_verification.py --stride 5 \
+    --set dataset.name=kitti dataset.root=data/raw/kitti/dataset "dataset.sequence='00'"
+#    options: --top-k K (verification.verify_top_k)  --estimator {opencv,numpy}
+#             --set verification.min_inliers=50 verification.degenerate_policy=reject ...
+#    -> results/verification/<dataset_key>/ijepa-<fingerprint>/<mode>/top<K>_<estimator>/
+#       {verification.csv, decisions.csv, verification.json}
+
+# 3. Phase 4 figures and GIF from the saved results (~1.5 min each)
+python scripts/generate_visualizations.py --phase 4
+python scripts/generate_visualizations.py --phase 4 --stride 5 \
+    --set dataset.name=kitti dataset.root=data/raw/kitti/dataset "dataset.sequence='00'"
+#    options: --gif-pairs N (evenly spaced rank-1 pairs added to the gallery pairs)
+#             --gif-fps F  --gif-width PX  --output-dir DIR
+
+# 4. Cross-check the own eight-point RANSAC against OpenCV's five-point on real pairs (~6-7.5 min)
+python scripts/compare_ransac.py --stride 5 \
+    --set dataset.name=kitti dataset.root=data/raw/kitti/dataset "dataset.sequence='00'"
+
+# 5. Tests
+python -m pytest tests/test_verification.py tests/test_verification_plots.py
+```
+
+Outputs go to `assets/phase_04_geometry/<dataset_key>_*.png|gif` and `<dataset_key>_phase4_summary.json`. The summary records `loaded_saved_result: true` when the decisions came from the saved run. Every pair drawn in a figure is re-verified to obtain its matches and inlier mask; the generator stops with an error unless the re-run reproduces the saved decision and inlier count exactly. This held for every figure below.
+
+## Phase 4 results
+
+**Inputs and settings.** Candidates are the saved Phase 3 I-JEPA top-5 for every query: SYNTHETIC, every 2nd frame, descriptors from **GPU FP16**; KITTI 00, every 5th frame, descriptors from **GPU FP32**. ORB, matching, RANSAC, decisions and labelling all run on the **CPU** (Ryzen 7 4800H; OpenCV 4.14, five-point RANSAC). The thresholds are the untuned defaults listed above, with `degenerate_policy: flag`. Ground-truth labels: **true revisit** ≤ 5 m, **not a revisit** > 25 m; pairs 5–25 m apart are unlabelled.
+
+| | SYNTHETIC (250 queries with candidates) | KITTI 00 (889 queries with candidates) |
+|---|---|---|
+| Verified pairs (top-5) | 1240 | 4435 |
+| True-revisit pairs accepted | 375 / 419 (89.5 %) | **300 / 300 (100 %)** |
+| Not-a-revisit pairs accepted | 2 / 689 (0.29 %) | **6 / 3943 (0.15 %)** |
+| Rank-1 only: true revisits accepted / not-a-revisit accepted | 108 / 113 and 1 / 129 | 126 / 126 and 1 / 746 |
+| Median RANSAC inliers, true revisit / not a revisit | 66 / 11 | 398 / 9 |
+| Queries with an accepted loop (highest-ranked accepted candidate) | 117: 111 true, 5 at 5–25 m, 1 > 25 m | 153: 134 true, 15 at 5–25 m, 4 > 25 m |
+| Accepted pairs flagged degenerate (pose unreliable) | 235 / 464 (130 low parallax, 104 planar, 1 pure rotation) | 256 / 449 (246 low parallax, 8 planar, 2 pure rotation) |
+| Time per pair incl. ORB (CPU) | 17 ms | 208 ms |
+| Median stage times: match / RANSAC / pose + homography (CPU) | 0.8 / 3.8 / 2.1 ms | 8.4 / 216 / 22 ms |
+| ORB per frame, incl. PNG read from `/mnt/e` (CPU) | 5.6 ms (416 × 128) | 93 ms (1241 × 376) |
+
+These are **pair-level checks with untuned default thresholds**. They are not loop-closure detection benchmarks: no threshold was tuned, and there is no development/test split. Phase 6 adds both.
+
+**Reading the numbers.**
+* **Geometry removes the confident aliasing that retrieval could not.** In Phase 3, query #600 on KITTI 00 had five candidates at cosine 0.96–0.98, all 200–235 m away. All five are rejected here with 8–10 inliers out of 21–34 matches. Over all rank-1 pairs, 745 of 746 wrong candidates are rejected and all 126 true revisits are kept.
+* **The two classes barely overlap in inlier count.** On KITTI 00, the fewest inliers of any true-revisit pair is 69 and the most of any rejected non-revisit is 45, with the threshold at 30. The 9.5 % of synthetic true-revisit pairs that are rejected are mostly low-texture views of the procedural city (35 with too few inliers, 6 with fewer than 50 keypoints) and 2 with dominant repeated windows.
+* **What geometry verifies is visual overlap, not distance.** Acceptance in the unlabelled 5–25 m band falls with distance: 97 % at 5–10 m, 74 % at 10–15 m, 45 % at 15–20 m, 10 % at 20–25 m. All six accepted pairs more than 25 m apart (26–48 m) show the *same street* from further along it. Their 31–63 inliers sit on the far end of the street, with low coverage (0.12–0.16). These are geometrically correct matches that the 25 m label calls negative. Whether such pairs should count as loop closures is a labelling decision for Phase 6.
+* **Most true revisits are low-parallax.** KITTI revisits drive the same lane, so the two views are often almost identical (median rotation-compensated parallax 0.81° for accepted true revisits). 246 of 449 accepted pairs are flagged `low_parallax`: correct place matches whose relative pose is poorly conditioned. With `degenerate_policy: reject` they would be lost, which is why the default only flags them.
+* **Own RANSAC vs OpenCV on real pairs.** `scripts/compare_ransac.py` re-verified the 889 rank-1 KITTI 00 pairs with both estimators (CPU). The decisions agree on 99.7 % (138 vs 137 accepted). The 3 disagreements all sit at the `min_inliers` boundary (29–32 inliers). The median inlier count of the eight-point implementation is 1.03× OpenCV's on accepted pairs. Its median RANSAC time is 40 ms vs 206 ms (41 vs 211 ms in an earlier identical run), because its vectorised hypothesis batches stop adaptively, while OpenCV runs all 2000 iterations on the many low-inlier (rejected) pairs.
+
+**ORB keypoints.** Every keypoint is a dot coloured by pyramid level. The 120 strongest also show their support region (31 px × 1.2^level) and orientation.
+
+![KITTI 00 ORB keypoints](assets/phase_04_geometry/kitti_00_cam2_orb_keypoints.png)
+![Synthetic ORB keypoints](assets/phase_04_geometry/synthetic_5cb1448a_orb_keypoints.png)
+
+**Raw vs filtered matches.** (a) Unfiltered nearest neighbours by Hamming distance, a random 300 of 2000. (b) The matches that survive the ratio test, the 64-bit bound and the mutual check. The funnel counts are in the captions.
+
+![KITTI 00 raw vs filtered matches](assets/phase_04_geometry/kitti_00_cam2_raw_matches.png)
+![Synthetic raw vs filtered matches](assets/phase_04_geometry/synthetic_5cb1448a_raw_matches.png)
+
+**RANSAC inliers and outliers, with epipolar lines.**
+* (a) RANSAC inliers are green and outliers red.
+* (b) and (c) Ten inliers of the query and their epipolar lines $\mathbf{l} = F\mathbf{u}_q$ in the candidate. Each matched point lies on its line, which is a visual check of the estimated $E$. On the true revisit the lines meet at the epipole near the vanishing point, as forward motion predicts.
+* The second figure shows the confident false candidate, rejected with too few inliers.
+
+![KITTI 00 RANSAC on a true revisit](assets/phase_04_geometry/kitti_00_cam2_ransac_inliers.png)
+![KITTI 00 RANSAC on a false candidate](assets/phase_04_geometry/kitti_00_cam2_ransac_rejected.png)
+![Synthetic RANSAC on a true revisit](assets/phase_04_geometry/synthetic_5cb1448a_ransac_inliers.png)
+![Synthetic RANSAC on a false candidate](assets/phase_04_geometry/synthetic_5cb1448a_ransac_rejected.png)
+
+**Accepted and rejected candidate pairs.** The rank-1 examples are chosen deterministically: a true revisit with the median inlier count, the most confident (highest-cosine) false candidate, a missed true revisit (if any), a false positive (if any), a degenerate accepted pair, and the true revisit with the most inliers. KITTI 00 has no missed rank-1 true revisit, so that panel is absent there. The synthetic false positive matches windows on *different* buildings that happen to fit one epipolar geometry. This is the partial repeated structure the twin test does not catch.
+
+![KITTI 00 decision gallery](assets/phase_04_geometry/kitti_00_cam2_decision_gallery.png)
+![Synthetic decision gallery](assets/phase_04_geometry/synthetic_5cb1448a_decision_gallery.png)
+
+**Statistics.**
+* (a) Inlier counts of the pairs that reached RANSAC, with the pairs rejected earlier counted in the legend.
+* (b) The acceptance region in the inlier-count / inlier-ratio plane. The 0.3 ratio threshold never binds on either dataset.
+* (c) The decision or rejection reason, by ground-truth label.
+
+![KITTI 00 verification statistics](assets/phase_04_geometry/kitti_00_cam2_verification_stats.png)
+![Synthetic verification statistics](assets/phase_04_geometry/synthetic_5cb1448a_verification_stats.png)
+
+**Top-1 candidates after verification on the trajectory.** Accepted links are coloured by ground truth. Queries whose top-1 was rejected are grey dots, so the hundreds of correctly rejected long-range candidates do not hide the loop closures. The single red link on KITTI 00 is the same-street pair described above.
+
+![KITTI 00 verified trajectory](assets/phase_04_geometry/kitti_00_cam2_verified_trajectory.png)
+![Synthetic verified trajectory](assets/phase_04_geometry/synthetic_5cb1448a_verified_trajectory.png)
+
+**Geometric verification GIFs.** Each pair is shown in three stages at 8 fps:
+1. ratio-tested mutual matches (yellow)
+2. RANSAC inliers (green) and outliers (red)
+3. the decision, with its reason and the ground-truth annotation
+
+The right panel shows the query and candidate on the trajectory and the decisions so far. The pairs are the gallery examples plus up to 12 evenly spaced labelled rank-1 pairs (duplicates removed), in chronological order: 18 pairs (2.2 MB) for SYNTHETIC, 16 (3.1 MB) for KITTI 00. Each stage is held for several frames; Pillow stores repeated frames once with a longer duration.
+
+| SYNTHETIC | KITTI 00 |
+|---|---|
+| ![Synthetic verification GIF](assets/phase_04_geometry/synthetic_5cb1448a_verification.gif) | ![KITTI 00 verification GIF](assets/phase_04_geometry/kitti_00_cam2_verification.gif) |
+
+## Phase 5: baseline comparison
+
+### Objective
+
+Compare frozen I-JEPA descriptors with an established self-supervised model (DINOv2 ViT-B/14) and two classical descriptors (HSV colour histograms, ORB bag of visual words). Every method runs through **the same pipeline**:
+
+* the same frames;
+* the same `VisualEncoder` interface and embedding cache;
+* the same exact cosine search with temporal exclusion (Phase 3);
+* the same ground truth and Recall@K code.
+
+Only the descriptor changes.
+
+### DINOv2 representations
+
+DINOv2 (Oquab et al., 2024) is a ViT trained by **self-distillation**. A student network sees several augmented crops of an image, and an EMA teacher sees two global crops. The student is trained to match the teacher's output distributions over $K$ prototypes:
+
+* an image-level loss on the [CLS] token (the DINO objective);
+* a patch-level masked-token loss (the iBOT objective);
+* KoLeo regularisation, which spreads the features;
+* Sinkhorn-Knopp centring of the teacher.
+
+For the image-level part, with student and teacher probabilities $p_s = \mathrm{softmax}(h_s(z)/\tau_s)$ and $p_t = \mathrm{softmax}((h_t(z') - c)/\tau_t)$, the loss is:
+
+```math
+\mathcal{L}_{\mathrm{DINO}} = -\sum_{k=1}^{K} p_t^{(k)} \log p_s^{(k)} .
+```
+
+The released backbones were trained on LVD-142M, a curated set of 142 M images; ViT-B/14 was distilled from ViT-g/14.
+
+**Architecture used here** (`encoders/dinov2.py`):
+* ViT-B/14: width 768, 12 blocks, 12 heads, 86.6 M parameters.
+* LayerScale on both residual branches.
+* A learnable [CLS] token.
+* Learned position embeddings for a 37 × 37 grid (518 px). They are bicubically resized to the input grid with the official +0.1 scale offset.
+
+**Descriptor:** the final-LayerNorm [CLS] token, L2-normalised. `pooling: mean` (patch-token mean) is available as an alternative.
+
+**Weights:** the official `dinov2_vitb14_pretrain.pth`, loaded with `strict=True`.
+
+**Verification:** `scripts/verify_dinov2.py` compared this implementation with Meta's reference code (commit 7764ea0, FP32 on the CPU). The outputs are **bitwise identical**: max absolute difference 0.0 over all tokens, for both 224 × 224 inputs and non-square 224 × 728 inputs. GPU FP32 matches CPU to 6 × 10⁻⁷.
+
+### I-JEPA vs DINOv2: training objectives
+
+| | I-JEPA ViT-H/14 | DINOv2 ViT-B/14 |
+|---|---|---|
+| Objective | Predict the target encoder's *representations* of masked image blocks from a context block (regression in latent space) | Match teacher and student *distributions* over prototypes for crops (image level) and masked patches (patch level) |
+| Augmentations | Random resized crop only | Multi-crop, colour jitter, blur, solarisation, ... |
+| Global token | None (patch tokens only; mean-pooled here) | [CLS] token trained by the image-level loss |
+| Invariance pressure | Implicit: from predicting semantic block content | Explicit: views of one image must agree |
+| Pretraining data | ImageNet-1K (1.28 M images), 300 epochs | LVD-142M (142 M curated images); ViT-B distilled from ViT-g |
+| Parameters | 630 M | 87 M |
+
+The two models differ in more than the objective: data scale, model size and distillation all change too. The comparison below is therefore of two **released checkpoints**, not a controlled study of the objectives.
+
+### HSV histogram construction
+
+`encoders/classical.py::HSVHistogramEncoder`:
+
+1. Resize the image to 320 px wide.
+2. Convert to HSV (OpenCV: $H \in [0,180)$, $S, V \in [0,256)$).
+3. Count a joint 3-D histogram with 16 × 4 × 4 = 256 bins: hue is the most discriminative channel and gets the most bins.
+4. Normalise to a probability vector $p$ and store $\sqrt{p}$ (the Hellinger embedding).
+
+Since $\lVert \sqrt{p} \rVert_2 = 1$, cosine similarity equals the **Bhattacharyya coefficient**:
+
+```math
+\cos\left(\sqrt{p}, \sqrt{q}\right) = \sum_{i} \sqrt{p_i \, q_i} \in [0, 1].
+```
+
+An optional spatial grid (`hsv.grid`) concatenates per-cell histograms. The default is one global histogram, which is invariant to where colours appear in the image.
+
+### ORB bag of visual words
+
+`encoders/classical.py::OrbBoVWEncoder`:
+
+1. Extract 1000 ORB descriptors (256 bits each) per image, at full resolution.
+2. **Quantise** each descriptor to the nearest of $K$ = 1000 binary visual words by Hamming distance (FAISS `IndexBinaryFlat`).
+3. Count the word histogram $n_w$ and weight it with **tf-idf**: $v_w = (n_w / n) \log(N / \mathrm{df}_w)$, where $n$ is the descriptor count, $N$ the number of vocabulary-fitting images and $\mathrm{df}_w$ the number of those images that contain word $w$.
+4. L2-normalise, so retrieval uses cosine similarity. An image without descriptors gets the uniform vector $1/\sqrt{K}$.
+
+### Visual vocabulary fitting (development data only)
+
+`scripts/fit_vocabulary.py` fits the vocabulary with **k-majority clustering**:
+
+1. Unpack each descriptor into 256 bits $b \in \lbrace 0, 1 \rbrace^{256}$. For binary vectors, squared Euclidean distance equals Hamming distance, $\lVert b - b' \rVert_2^2 = d_H(b, b')$.
+2. Run k-means (FAISS, 20 iterations, seed 0) on a random sample of at most 200,000 descriptors.
+3. Binarise each centroid by majority vote: bit $= 1$ if the mean is at least 0.5.
+4. Compute the idf over the fitting images.
+
+The vocabulary file records its sources and a digest. That digest is part of the descriptor-cache fingerprint, so a refit can never reuse stale descriptors.
+
+**Development/test split** (`splits` in `configs/default.yaml`), introduced here because the vocabulary is the first fitted component:
+
+| Role | KITTI sequences | Used for |
+|---|---|---|
+| Development | 00, 05 | Vocabulary fitting (05 only); design inspection (00, already inspected in Phases 2–4); threshold tuning (Phase 6) |
+| Held-out test | 02, 06, 08, 09 | Evaluated once in Phase 6; never used for fitting or tuning |
+
+`vocabulary_plan` raises an error if any fitting sequence is not listed in `splits.dev` or is listed in `splits.test`; a test covers this. If the evaluated sequence is one of the fitting sequences, it is flagged `in_sample`.
+
+* **KITTI vocabulary:** fitted on sequence **05**: 553 frames (every 5th), 552,998 descriptors, 200,000 sampled. All 1000 words are used. It is evaluated on 00, so the KITTI numbers below are *not* in-sample for the vocabulary.
+* **Synthetic vocabulary:** fitted on a *different generated city* (seed 11, all 599 frames, 161,108 descriptors). Synthetic frames have few ORB features (about 270 each), so they are not subsampled. The evaluated city is seed 7.
+
+### Experimental fairness
+
+| Factor | Treatment |
+|---|---|
+| Frames, sampling, temporal exclusion, top-K, ground truth | Identical for all methods; one saved `retrieval.npz` per method in the same format |
+| Neural preprocessing | Identical: squash to 224 × 224, ImageNet normalisation, so both use 16 × 16 patches of 14 px |
+| Pooling | Each model's natural global descriptor: I-JEPA has no [CLS] token, so it uses the patch mean; DINOv2 uses [CLS]. DINOv2 patch-mean is available but not reported |
+| Precision | Both neural models run in FP32 on the GPU (`auto` picks FP32 on the GTX 1650 Ti); DINOv2 GPU vs CPU cosine is 1.0 |
+| Classical baselines | Full-resolution input for ORB; vocabulary from development data only |
+| Tuning | None: every method uses default settings. Phase 2 found `aspect` preprocessing better than `squash` for I-JEPA on KITTI 00; it is *not* used here, and choosing it belongs to Phase 6, on development data |
+| Statistical caveat | One sequence; consecutive queries are correlated, so the paired tests below are optimistic |
+
+### Computational trade-offs
+
+`scripts/profile_encoders.py` measures every encoder under identical conditions:
+* the same 64 KITTI 00 frames, held in RAM (I/O excluded);
+* sequential model loading;
+* one warm-up batch, then batch size 8.
+
+| | I-JEPA ViT-H/14 | DINOv2 ViT-B/14 | ORB bag of words | HSV histogram |
+|---|---|---|---|---|
+| Device (precision) | GPU (FP32) | GPU (FP32) | CPU | CPU |
+| Parameters | 630.4 M | 86.6 M | none (1000 × 256-bit vocabulary) | none |
+| Weights / vocabulary file | 2.52 GB | 346 MB | 34 KB | none |
+| Input | 224 × 224 (squash) | 224 × 224 (squash) | 1241 × 376, 1000 ORB keypoints | 320 px wide |
+| Descriptor | 1280-D float32 (5.1 KB) | 768-D (3.1 KB) | 1000-D (4.0 KB) | 256-D (1.0 KB) |
+| Encoding time per image | **215 ms** | 35 ms | 11 ms | 1.6 ms |
+| Peak GPU memory | 2585 MB | 401 MB | 0 | 0 |
+| Model load time (from `/mnt/e`) | 74 s | 9.7 s | 0.1 s | 0 |
+
+Search cost is negligible for all methods at this scale: 0.05–0.21 ms per query with exact FAISS search on the CPU.
+
+### Implementation map
+
+| File | Contents |
+|---|---|
+| `src/latent_loop/encoders/dinov2.py` | `DinoViT` (LayerScale blocks, [CLS], interpolated pos-embed), `DINOv2Encoder`, `CHECKPOINTS`, `write_sidecar` |
+| `src/latent_loop/encoders/classical.py` | `HSVHistogramEncoder`, `Vocabulary`, `fit_vocabulary` (k-majority + idf), `OrbBoVWEncoder`, `vocabulary_plan` (development-only guard) |
+| `src/latent_loop/encoders/__init__.py` | `build_encoder` for `ijepa`, `dinov2`, `hsv`, `orb_bovw` |
+| `src/latent_loop/visualization/baselines.py`, `phase5.py` | Comparison figures and GIF |
+| `scripts/verify_dinov2.py`, `fit_vocabulary.py`, `profile_encoders.py` | Reference check, vocabulary fitting, cost profile |
+| `scripts/download_checkpoints.py dinov2` | Download or reuse the checkpoint; record its SHA-256 |
+| `configs/dinov2.yaml`; `splits`, `hsv`, `orb_bovw`, `extraction`, `device` in `configs/default.yaml` | Configuration |
+
+## Steps to run Phase 5
+
+All commands run from the repository root with `.env` active and `PYTHONPATH` unset. KITTI commands use `--set dataset.name=kitti dataset.root=data/raw/kitti/dataset "dataset.sequence='00'"`, abbreviated below as `$KITTI00`:
+
+```bash
+KITTI00="dataset.name=kitti dataset.root=data/raw/kitti/dataset dataset.sequence='00'"
+
+# 1. DINOv2 ViT-B/14 checkpoint (346 MB; reused if present) and SHA-256 sidecar
+python scripts/download_checkpoints.py dinov2 --name vitb14
+
+# 2. Check the DINOv2 implementation against Meta's code (~1 min; writes results/metrics/dinov2_verification.json)
+git clone --depth 1 https://github.com/facebookresearch/dinov2 /tmp/dinov2_official
+python scripts/verify_dinov2.py --official-repo /tmp/dinov2_official
+
+# 3. Fit the ORB vocabularies on development data only (synthetic: seed-11 city, ~30 s;
+#    KITTI: sequence 05, ~2 min). A test sequence in orb_bovw.fit_kitti_sequences is refused.
+python scripts/fit_vocabulary.py
+python scripts/fit_vocabulary.py --set $KITTI00
+
+# 4. Descriptors + retrieval + causal-replay check for each baseline (extracts if not cached)
+for enc in hsv orb_bovw; do
+  python scripts/run_retrieval.py --config configs/default.yaml --encoder $enc --stride 2 --check-causal
+  python scripts/run_retrieval.py --config configs/default.yaml --encoder $enc --stride 5 --check-causal --set $KITTI00
+done
+python scripts/run_retrieval.py --config configs/dinov2.yaml --encoder dinov2 --stride 2 --check-causal
+python scripts/run_retrieval.py --config configs/dinov2.yaml --encoder dinov2 --stride 5 --check-causal --set $KITTI00
+#    (I-JEPA results come from Phase 3; its cache fingerprint d49bc21384 is unchanged.)
+
+# 5. Encoder cost profile (64 frames in RAM; GPU for the neural models; ~3 min)
+python scripts/profile_encoders.py --stride 2 --frames 64
+python scripts/profile_encoders.py --stride 5 --frames 64 --set $KITTI00
+
+# 6. Phase 5 figures and GIF (~2.5 min each). The KITTI GIF uses 64 frames, 800 px and
+#    128 colours to stay under 10 MB (five photographs per frame compress poorly).
+python scripts/generate_visualizations.py --phase 5 --max-frames 80
+python scripts/generate_visualizations.py --phase 5 --stride 5 --max-frames 64 \
+    --gif-width 800 --gif-colors 128 --set $KITTI00
+
+# 7. Tests
+python -m pytest tests/test_baselines.py tests/test_baseline_plots.py
+```
+
+The `KITTI00` variable is expanded unquoted so that `--set` receives three separate arguments; the inner single quotes keep the sequence a string. The runs below used the equivalent explicit form (`--set dataset.name=kitti dataset.root=data/raw/kitti/dataset "dataset.sequence='00'"`). The variable form was checked separately and reproduces identical results.
+
+## Phase 5 results
+
+**Setup.**
+* SYNTHETIC: every 2nd frame, 300 queries. KITTI 00: every 5th frame, 909 queries.
+* Top-10 retrieval, temporal exclusion 100 frames, revisit ≤ 5 m.
+* I-JEPA and DINOv2 descriptors from the **GPU (FP32)**; I-JEPA's SYNTHETIC cache dates from Phase 2 (GPU FP16).
+* HSV and ORB bag of words on the **CPU**. Retrieval and metrics on the **CPU**.
+* Offline and causal-replay retrieval gave identical candidates for every method.
+
+**KITTI 00 (development sequence), preliminary Recall@K on positive queries:**
+
+| Method | R@1 / R@5 / R@10, distance-only (162 queries) | R@1 / R@5 / R@10, same direction (150) | Pair ROC AUC | Encoding time per image |
+|---|---|---|---|---|
+| I-JEPA ViT-H/14 | 0.778 / 0.877 / 0.889 | 0.840 / 0.947 / 0.960 | 0.834 | 215 ms (GPU) |
+| DINOv2 ViT-B/14 | 0.895 / **0.920** / 0.920 | 0.967 / **0.993** / 0.993 | 0.950 | 35 ms (GPU) |
+| ORB bag of words | **0.901** / 0.914 / **0.932** | **0.973** / 0.987 / **1.000** | **0.959** | 11 ms (CPU) |
+| HSV histogram | 0.852 / 0.901 / 0.907 | 0.920 / 0.973 / 0.973 | 0.888 | 1.6 ms (CPU) |
+
+**SYNTHETIC:**
+
+| Method | R@1 / R@5 / R@10 (115 queries; both definitions identical) | Pair ROC AUC |
+|---|---|---|
+| I-JEPA ViT-H/14 | 0.983 / 1.000 / 1.000 | 0.985 |
+| DINOv2 ViT-B/14 | 0.983 / 1.000 / 1.000 | 0.960 |
+| ORB bag of words | 0.991 / 1.000 / 1.000 | 0.996 |
+| HSV histogram | 1.000 / 1.000 / 1.000 | 0.998 |
+
+"Pair ROC AUC" separates the cosines of all eligible true-revisit pairs (≤ 5 m) from non-revisit pairs (> 25 m). These are retrieval checks on one development sequence, not loop-closure detection results.
+
+**Reading the numbers.**
+* **On KITTI 00, I-JEPA retrieves worse than every baseline at K = 1.** In paired comparisons on the 162 positive queries:
+  * DINOv2 is right where I-JEPA is wrong 21 times, and the reverse happens 2 times (exact McNemar p = 6.6 × 10⁻⁵).
+  * For ORB bag of words the counts are 21 vs 1 (p = 1.1 × 10⁻⁵).
+  * DINOv2 and ORB bag of words are statistically indistinguishable (3 vs 4, p = 1.0).
+  * Consecutive queries are correlated, so these p-values overstate the evidence. The direction is nevertheless consistent across K and both ground-truth definitions.
+* **I-JEPA's cosines are compressed.** Its non-revisit pairs have a median cosine of 0.75 and a 99th percentile of 0.94, against 0.95 for true revisits. Confident wrong candidates are therefore common, as Phase 3 found. DINOv2's [CLS] token separates the two populations much better (AUC 0.95 vs 0.83).
+* **The gap narrows at higher K.** I-JEPA's Recall@10 (0.889) is within 1.8–4.3 points of the others, so many I-JEPA misses are near misses. Phase 4 geometric verification can recover some of these from the top-5.
+* **Cost.** I-JEPA ViT-H/14 is 6× slower than DINOv2 ViT-B/14 and uses 6.4× more GPU memory, for a lower Recall@1 here.
+* **SYNTHETIC is too easy to rank methods.** Every building in the procedural city has a unique flat colour, so a global colour histogram alone reaches Recall@1 = 1.0. Differences of one or two queries out of 115 are not meaningful.
+* **Not tuned.** All four methods use defaults. Most importantly, I-JEPA uses `squash`, although Phase 2 measured `aspect` as better on this sequence. Phase 6 will choose preprocessing, pooling and thresholds on the development sequences (00, 05), and then evaluate once on the held-out sequences (02, 06, 08, 09) with detection metrics. **No claim that any method is generally better follows from these numbers.**
+
+**Preliminary Recall@K.** Curves use a shared axis from 0.5, and the bars start at 0.
+
+![KITTI 00 Recall@K comparison](assets/phase_05_baselines/kitti_00_cam2_recall_comparison.png)
+![Synthetic Recall@K comparison](assets/phase_05_baselines/synthetic_5cb1448a_recall_comparison.png)
+
+**Embedding similarity comparisons.**
+* Top: each method's cosine similarity for eligible pairs, each on its own colour scale (1st to 99.9th percentile), because the methods' similarity ranges differ.
+* Bottom: cosine distributions of true-revisit and non-revisit pairs, with the ROC AUC.
+
+![KITTI 00 similarity comparison](assets/phase_05_baselines/kitti_00_cam2_similarity_comparison.png)
+![Synthetic similarity comparison](assets/phase_05_baselines/synthetic_5cb1448a_similarity_comparison.png)
+
+**Qualitative successes and failures.** Rows are chosen deterministically by case, using the highest I-JEPA top-1 cosine within each case. Each row shows the query (black) and every method's top-1 candidate (green = true revisit). Query #600 is the Phase 3 aliasing example: every method returns a false candidate 132–235 m away.
+
+![KITTI 00 qualitative examples](assets/phase_05_baselines/kitti_00_cam2_qualitative.png)
+![Synthetic qualitative examples](assets/phase_05_baselines/synthetic_5cb1448a_qualitative.png)
+
+**Side-by-side retrieved images (top-3 per method).** Query 1 is a revisit that every method gets right. Query 2 is one where I-JEPA and the baselines disagree.
+
+![KITTI 00 side-by-side top-3](assets/phase_05_baselines/kitti_00_cam2_side_by_side.png)
+![Synthetic side-by-side top-3](assets/phase_05_baselines/synthetic_5cb1448a_side_by_side.png)
+
+**Computational trade-offs** (from `results/metrics/encoder_profile_kitti_00_cam2.json`):
+
+![KITTI 00 cost comparison](assets/phase_05_baselines/kitti_00_cam2_cost_comparison.png)
+
+**Side-by-side retrieval GIFs.** Each frame shows:
+* the query (top left);
+* each method's top-1 eligible candidate in a 2 × 2 grid, with a green or red border for the ground-truth verdict and a running Recall@1 over the positive queries seen so far;
+* the trajectory, with each method's candidate position in its colour.
+
+SYNTHETIC: 80 evenly spaced queries, 900 px, 8.1 MB. KITTI 00: 64 queries, 800 px, 128 colours, 9.0 MB. Both at 8 fps.
+
+| SYNTHETIC | KITTI 00 |
+|---|---|
+| ![Synthetic baseline GIF](assets/phase_05_baselines/synthetic_5cb1448a_baseline_retrieval.gif) | ![KITTI 00 baseline GIF](assets/phase_05_baselines/kitti_00_cam2_baseline_retrieval.gif) |
+
 ## Troubleshooting
 
 | Symptom | Cause and fix |
@@ -1013,7 +1576,7 @@ These are **preliminary** retrieval checks on positive queries only. They are no
 | Warnings about `launch-ros`/`ament` or odd imports from `ros2_humble` | `~/.bashrc` sources ROS 2 Humble, which adds Python 3.10 packages to `PYTHONPATH`. Run `unset PYTHONPATH` in the shell (or prefix commands with `env -u PYTHONPATH`). |
 | VS Code reports `opencv-python-headless`/`imageio` "not installed" | The editor uses a different interpreter. Select `.env/bin/python`. |
 | `pip install` or imports are very slow | The venv (`.env/`) is on `/mnt/<drive>`, where file I/O is slow. This is expected; a venv on the Linux filesystem is faster. |
-| `ERROR: Image directory not found ... image_2` | KITTI is not unpacked at `data/raw/kitti/dataset`. See [Dataset preparation](#kitti-odometry-manual-download-not-done-yet), or pass `--root`. |
+| `ERROR: Image directory not found ... image_2` | KITTI is not unpacked at `data/raw/kitti/dataset`. See [Dataset preparation](#kitti-odometry-selective-download-done), or pass `--root`. |
 | `Pose/frame misalignment` | `poses/XX.txt` and `times.txt` come from different sequences or an incomplete download. |
 | GIF larger than 10 MB | Lower `--max-frames` or `--gif-width`. Noisy images compress poorly in GIF. |
 | `unable to mmap ... Cannot allocate memory (12)` when loading a checkpoint | Private memory maps are charged against RAM + swap. The project loads with a shared map (`load_mmap`); call that instead of `torch.load(..., mmap=True)`. |
@@ -1021,6 +1584,15 @@ These are **preliminary** retrieval checks on positive queries only. They are no
 | `ModuleNotFoundError: faiss` | Install the ML extra: `pip install -e ".[dev,ml]"` (or `pip install faiss-cpu==1.15.1`). |
 | `descriptors must be L2-normalised` from the retrieval index | The descriptors did not come from a `VisualEncoder` (which normalises them). Normalise with `latent_loop.features.pooling.l2_normalize`. |
 | A stopped vehicle "revisits" itself | The 100-frame exclusion assumes motion. Add `--set retrieval.temporal_exclusion_seconds=...`; a distance-travelled rule is future work. |
+| Verification of KITTI is slow (~0.2 s per pair) | RANSAC runs up to 2000 iterations on pairs with few inliers, i.e. on most wrong candidates. Lower `--top-k`, or use `--estimator numpy` (vectorised, adaptive stopping; median RANSAC 40 vs 206 ms per pair on KITTI 00). |
+| `No retrieval result in ...` from `run_verification.py` | Phase 4 reads saved Phase 3 results. Run `scripts/run_retrieval.py` with the same `--config`, `--stride` and `--set` first. |
+| `Re-verification of (q, c) gave ...` from `--phase 4` | The saved verification result was produced with different code or settings. Re-run `scripts/run_verification.py`. |
+| Many correct revisits flagged `low_parallax` | Expected: revisits along the same lane give nearly identical views. The place match is correct, but its relative pose is poorly conditioned. Only `degenerate_policy: reject` turns the flag into a rejection. |
+| `ORB visual vocabulary not found` | Fit it first: `python scripts/fit_vocabulary.py` with the same `--config`/`--set` as the evaluation run. |
+| `Vocabulary fit sequences [...] are not development-only` | `orb_bovw.fit_kitti_sequences` lists a held-out (`splits.test`) or unlisted sequence. Only `splits.dev` sequences may be used for fitting. |
+| `DINOv2 weights not found` | `python scripts/download_checkpoints.py dinov2 --name vitb14` (346 MB). |
+| `No cached descriptors / retrieval result for <method>` from `--phase 5` | Run `scripts/run_retrieval.py --encoder <method>` with the same `--stride`/`--set` (step 4 of Phase 5). |
+| Phase 5 GIF larger than 10 MB | Use fewer frames, a narrower width or fewer palette colours, e.g. `--max-frames 64 --gif-width 800 --gif-colors 128`. |
 | `torch.cuda.OutOfMemoryError` | Handled automatically: the batch is halved, then the CPU is used. Lower `extraction.batch_size` to avoid the retries. |
 | `I-JEPA target-encoder weights not found` | Run `python scripts/download_checkpoints.py ijepa --name vith14_in1k` (step 2 above). |
 | `import torch` fails with `cannot read file data` | A corrupted PyTorch install (seen after two concurrent `pip install` runs). Run `pip install --force-reinstall --no-deps torch==2.15.0`. |
@@ -1034,6 +1606,20 @@ These are **preliminary** retrieval checks on positive queries only. They are no
   Code: <https://github.com/facebookresearch/dinov2>
 - J. Johnson, M. Douze, H. Jégou, *Billion-scale similarity search with GPUs* (FAISS).
   Code: <https://github.com/facebookresearch/faiss>
+- M. Caron et al., *Emerging Properties in Self-Supervised Vision Transformers* (DINO), ICCV 2021.
+- J. Sivic, A. Zisserman, *Video Google: A Text Retrieval Approach to Object Matching in
+  Videos*, ICCV 2003 (bag of visual words, tf-idf).
+- D. Gálvez-López, J. D. Tardós, *Bags of Binary Words for Fast Place Recognition in Image
+  Sequences*, IEEE T-RO 2012 (binary vocabularies for loop closure).
+- M. J. Swain, D. H. Ballard, *Color Indexing*, IJCV 1991 (colour histograms).
+- E. Rublee, V. Rabaud, K. Konolige, G. Bradski, *ORB: An efficient alternative to SIFT or
+  SURF*, ICCV 2011.
+- D. G. Lowe, *Distinctive Image Features from Scale-Invariant Keypoints*, IJCV 2004 (ratio test).
+- M. A. Fischler, R. C. Bolles, *Random Sample Consensus*, Communications of the ACM, 1981.
+- O. Chum, J. Matas, J. Kittler, *Locally Optimized RANSAC*, DAGM 2003.
+- D. Nistér, *An Efficient Solution to the Five-Point Relative Pose Problem*, IEEE TPAMI 2004.
+- R. Hartley, A. Zisserman, *Multiple View Geometry in Computer Vision*, 2nd ed., Cambridge
+  University Press, 2004 (eight-point algorithm, normalisation, Sampson distance).
 - A. Geiger, P. Lenz, R. Urtasun, *Are we ready for Autonomous Driving? The KITTI Vision
   Benchmark Suite*, CVPR 2012. <https://www.cvlibs.net/datasets/kitti/eval_odometry.php>
 

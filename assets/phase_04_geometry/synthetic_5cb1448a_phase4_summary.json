@@ -1,0 +1,187 @@
+{
+  "phase": 4,
+  "dataset_key": "synthetic_5cb1448a",
+  "queries": 300,
+  "frame_stride": 2,
+  "verify_top_k": 5,
+  "verification_config": {
+    "orb": {
+      "n_features": 2000,
+      "scale_factor": 1.2,
+      "n_levels": 8,
+      "edge_threshold": 31,
+      "fast_threshold": 20
+    },
+    "matching": {
+      "ratio": 0.8,
+      "max_hamming": 64,
+      "mutual": true
+    },
+    "min_keypoints": 50,
+    "min_matches": 20,
+    "twin_hamming": 24,
+    "twin_min_px": 16,
+    "max_repeated_fraction": 0.5,
+    "estimator": "opencv",
+    "ransac_threshold_px": 1.0,
+    "ransac_confidence": 0.999,
+    "ransac_max_iters": 2000,
+    "min_inliers": 30,
+    "min_inlier_ratio": 0.3,
+    "coverage_grid": [
+      8,
+      4
+    ],
+    "min_coverage": 0.1,
+    "homography_diagnostic": true,
+    "homography_threshold_px": 2.0,
+    "homography_dominance": 0.9,
+    "rotation_tolerance": 0.05,
+    "pure_rotation_min_deg": 2.0,
+    "min_parallax_deg": 1.0,
+    "degenerate_policy": "flag",
+    "seed": 0
+  },
+  "verification_dir": "/mnt/e/project_ws/jepa_slam/results/verification/synthetic_5cb1448a/ijepa-d49bc21384/offline/top5_opencv",
+  "loaded_saved_result": true,
+  "timing": {
+    "total_s": 21.636090174997662,
+    "pairs": 1240,
+    "ms_per_pair_including_orb": 17.448459818546503,
+    "median_ms_match": 0.838,
+    "median_ms_ransac": 3.812,
+    "median_ms_pose": 2.062,
+    "orb_frames": 300,
+    "orb_ms_per_frame": 5.56468274671109
+  },
+  "pairs": {
+    "pairs": 1240,
+    "accepted": 464,
+    "positive_pairs": 419,
+    "negative_pairs": 689,
+    "ignored_pairs": 132,
+    "true_accepts": 375,
+    "false_rejects": 44,
+    "false_accepts": 2,
+    "true_rejects": 687,
+    "accept_rate_positive": 0.8949880668257757,
+    "accept_rate_negative": 0.002902757619738752,
+    "reasons_positive": {
+      "accepted": 375,
+      "too_few_inliers": 35,
+      "missing_descriptors": 6,
+      "repeated_structure": 2,
+      "insufficient_matches": 1
+    },
+    "reasons_negative": {
+      "too_few_inliers": 387,
+      "insufficient_matches": 254,
+      "missing_descriptors": 41,
+      "repeated_structure": 5,
+      "accepted": 2
+    },
+    "median_inliers_positive": 66.0,
+    "median_inliers_negative": 11.0,
+    "degenerate_flags": {
+      "low_parallax": 147,
+      "planar_scene": 122,
+      "pure_rotation": 1
+    }
+  },
+  "top1": {
+    "pairs": 250,
+    "accepted": 113,
+    "positive_pairs": 113,
+    "negative_pairs": 129,
+    "ignored_pairs": 8,
+    "true_accepts": 108,
+    "false_rejects": 5,
+    "false_accepts": 1,
+    "true_rejects": 128,
+    "accept_rate_positive": 0.9557522123893806,
+    "accept_rate_negative": 0.007751937984496124,
+    "reasons_positive": {
+      "accepted": 108,
+      "too_few_inliers": 3,
+      "repeated_structure": 1,
+      "missing_descriptors": 1
+    },
+    "reasons_negative": {
+      "too_few_inliers": 72,
+      "insufficient_matches": 47,
+      "missing_descriptors": 8,
+      "repeated_structure": 1,
+      "accepted": 1
+    },
+    "median_inliers_positive": 99.0,
+    "median_inliers_negative": 11.0,
+    "degenerate_flags": {
+      "low_parallax": 57,
+      "planar_scene": 28
+    }
+  },
+  "examples": [
+    {
+      "case": "True revisit, accepted (median inlier count)",
+      "query": 460,
+      "candidate": 84,
+      "reason": "accepted",
+      "inliers": 102,
+      "reverified_identically": true
+    },
+    {
+      "case": "Confident false candidate, rejected by geometry",
+      "query": 252,
+      "candidate": 86,
+      "reason": "too_few_inliers",
+      "inliers": 11,
+      "reverified_identically": true
+    },
+    {
+      "case": "True revisit, rejected (missed)",
+      "query": 596,
+      "candidate": 222,
+      "reason": "repeated_structure",
+      "inliers": 0,
+      "reverified_identically": true
+    },
+    {
+      "case": "False candidate, accepted (false positive)",
+      "query": 298,
+      "candidate": 106,
+      "reason": "accepted",
+      "inliers": 34,
+      "reverified_identically": true
+    },
+    {
+      "case": "Accepted, degenerate geometry flagged",
+      "query": 374,
+      "candidate": 0,
+      "reason": "accepted",
+      "inliers": 182,
+      "reverified_identically": true
+    },
+    {
+      "case": "True revisit, accepted (most inliers)",
+      "query": 376,
+      "candidate": 2,
+      "reason": "accepted",
+      "inliers": 173,
+      "reverified_identically": true
+    }
+  ],
+  "gif_pairs": 18,
+  "gif_frames": 198,
+  "gif_size_mb": 2.22,
+  "gif_render_seconds": 32.9,
+  "outputs": {
+    "orb_keypoints": "synthetic_5cb1448a_orb_keypoints.png",
+    "raw_matches": "synthetic_5cb1448a_raw_matches.png",
+    "ransac_inliers": "synthetic_5cb1448a_ransac_inliers.png",
+    "ransac_rejected": "synthetic_5cb1448a_ransac_rejected.png",
+    "decision_gallery": "synthetic_5cb1448a_decision_gallery.png",
+    "statistics": "synthetic_5cb1448a_verification_stats.png",
+    "trajectory": "synthetic_5cb1448a_verified_trajectory.png",
+    "verification_gif": "synthetic_5cb1448a_verification.gif"
+  }
+}
