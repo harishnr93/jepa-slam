@@ -1,0 +1,28 @@
+{
+  "dinov2": {
+    "variant": "aspect",
+    "dev_map": {
+      "squash": 0.7983070134446282,
+      "aspect": 0.803821843055432
+    }
+  },
+  "hsv": {
+    "variant": null,
+    "dev_map": {
+      "None": 0.7106360680310745
+    }
+  },
+  "ijepa": {
+    "variant": "aspect",
+    "dev_map": {
+      "squash": 0.5866280736336973,
+      "aspect": 0.6336840804193842
+    }
+  },
+  "orb_bovw": {
+    "variant": null,
+    "dev_map": {
+      "None": 0.7906474749841563
+    }
+  }
+}

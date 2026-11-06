@@ -71,6 +71,7 @@ def main() -> int:
     parser.add_argument("--frames", type=int, default=64)
     parser.add_argument("--encoders", nargs="*", default=list(AVAILABLE_ENCODERS))
     parser.add_argument("--set", nargs="*", default=[], metavar="KEY=VALUE")
+    parser.add_argument("--tag", help="output name suffix (default: the dataset key)")
     args = parser.parse_args()
     overrides = list(args.set) + ([f"dataset.sampling.stride={args.stride}"] if args.stride else [])
     config = load_config(args.config, overrides)
@@ -131,7 +132,10 @@ def main() -> int:
         enc.unload()
         del enc
         gc.collect()
-    out = resolve_path("results/metrics") / f"encoder_profile_{report['dataset_key']}.json"
+    out = (
+        resolve_path("results/metrics")
+        / f"encoder_profile_{args.tag or report['dataset_key']}.json"
+    )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, default=str))
     print(f"-> {out}")

@@ -10,6 +10,7 @@ Usage:
     python scripts/generate_visualizations.py --phase 3                       # retrieval, synthetic
     python scripts/generate_visualizations.py --phase 4                       # verification
     python scripts/generate_visualizations.py --phase 5                       # baselines
+    python scripts/generate_visualizations.py --phase 6                       # benchmark
 """
 
 from __future__ import annotations
@@ -33,19 +34,21 @@ from latent_loop.visualization.plots import plot_frame_montage, save_figure
 from latent_loop.visualization.trajectory import plot_trajectory_overview
 
 logger = get_logger("generate_visualizations")
-IMPLEMENTED_PHASES = (1, 2, 3, 4, 5)
+IMPLEMENTED_PHASES = (1, 2, 3, 4, 5, 6)
 DEFAULT_CONFIGS = {
     1: "configs/default.yaml",
     2: "configs/ijepa.yaml",
     3: "configs/ijepa.yaml",
     4: "configs/ijepa.yaml",
     5: "configs/dinov2.yaml",
+    6: "configs/benchmark.yaml",
 }
 DEFAULT_OUTPUT_DIRS = {
     2: "assets/phase_02_ijepa",
     3: "assets/phase_03_retrieval",
     4: "assets/phase_04_geometry",
     5: "assets/phase_05_baselines",
+    6: "assets/phase_06_evaluation",
 }
 
 
@@ -163,6 +166,7 @@ def main() -> None:
     parser.add_argument("--output-dir", help="override visualization.output_dir")
     parser.add_argument("--stride", type=int, help="frame stride for sampled-frame plots")
     parser.add_argument("--max-frames", type=int, help="maximum GIF frames")
+    parser.add_argument("--gif-sequence", help="phase 6: test sequence for the playback GIF")
     parser.add_argument("--gif-pairs", type=int, help="phase 4: evenly spaced pairs in the GIF")
     parser.add_argument("--gif-fps", type=float, help="GIF frame rate")
     parser.add_argument("--gif-width", type=int, help="GIF width in pixels")
@@ -197,6 +201,18 @@ def main() -> None:
         )
     if args.phase == 1:
         summary = phase1(config, args)
+    elif args.phase == 6:
+        from latent_loop.visualization.phase6 import generate_phase6  # noqa: PLC0415
+
+        vis = config["visualization"]
+        summary = generate_phase6(
+            config,
+            resolve_path(args.output_dir or DEFAULT_OUTPUT_DIRS[6]),
+            gif_frames=args.max_frames or 110,
+            gif_fps=args.gif_fps or 8.0,
+            gif_width=args.gif_width or vis["gif_width_px"],
+            gif_sequence=args.gif_sequence,
+        )
     elif args.phase == 5:
         from latent_loop.visualization.phase5 import generate_phase5  # noqa: PLC0415
 

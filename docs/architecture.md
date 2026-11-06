@@ -1,6 +1,6 @@
 # Architecture
 
-Status: Phase 5. This document grows with each phase.
+Status: Phase 6. This document grows with each phase.
 
 ## Module map
 
@@ -229,4 +229,29 @@ flowchart LR
 10. **Baselines share every stage but the descriptor.** All encoders implement `VisualEncoder`
     (L2-normalised float32 output), so caching, FAISS retrieval, saved-result format and
     metrics are the same code for every method.
+
+## Phase 6: development selection, then one held-out evaluation
+
+```mermaid
+flowchart TD
+    subgraph DEV[Development stage: KITTI 00, 05]
+        D1[descriptors + causal retrieval<br/>every method, every variant] --> D2[variant per encoder<br/>max pooled retrieval mAP]
+        D2 --> D3[top-5 geometric verification<br/>parallel, pair cache]
+        D3 --> D4[one hypothesis per query<br/>score = cosine or inliers]
+        D4 --> D5[pooled PR curve<br/>tau = argmax F1, tau at P = 1]
+    end
+    D2 --> SEL[(selection.json)]
+    D5 --> THR[(thresholds.json)]
+    subgraph TEST[Test stage: KITTI 02, 06, 08, 09]
+        T1[same pipeline with the frozen variant] --> T2[metrics at the development tau]
+    end
+    SEL --> T1
+    THR --> T2
+    T2 --> OUT[test_metrics.csv / json, curves, predictions,<br/>test_timing.json, efficiency.csv]
+```
+
+11. **The test stage cannot tune.** `Benchmark.run_test` refuses to run without the development
+    stage's `selection.json` and `thresholds.json` and rejects overlapping splits; it only
+    applies them. Verification results are cached per (sequence, verification-config hash),
+    so re-running never changes a decision.
 

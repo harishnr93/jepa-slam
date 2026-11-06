@@ -1,0 +1,41 @@
+# Phase 6 benchmark: development selection on splits.dev, one evaluation on splits.test.
+# Inherits splits, retrieval, verification, ground_truth, hsv, orb_bovw from default.yaml.
+extends: default.yaml
+
+ijepa:                   # same values as configs/ijepa.yaml (resize_mode chosen on dev)
+  checkpoint: vith14_in1k
+  precision: auto
+  resize_mode: squash
+  image_size: null
+  pooling: mean
+
+dinov2:                  # same values as configs/dinov2.yaml (resize_mode chosen on dev)
+  checkpoint: vitb14
+  precision: auto
+  resize_mode: squash
+  image_size: 224
+  pooling: cls
+
+benchmark:
+  name: kitti_stride5
+  dataset_root: data/raw/kitti/dataset
+  camera: 2
+  stride: 5               # every 5th frame (2 Hz) on every sequence
+  verify_top_k: 5         # retrieved candidates passed to geometric verification
+  workers: 6              # parallel verification processes (CPU)
+  methods:                # key: {encoder, verify}
+    ijepa:     {encoder: ijepa,    verify: false}
+    ijepa_gv:  {encoder: ijepa,    verify: true}
+    dinov2:    {encoder: dinov2,   verify: false}
+    dinov2_gv: {encoder: dinov2,   verify: true}
+    orb_bovw:  {encoder: orb_bovw, verify: false}
+    hsv:       {encoder: hsv,      verify: false}
+  variants:               # preprocessing candidates, selected by pooled dev retrieval mAP
+    ijepa: [squash, aspect]
+    dinov2: [squash, aspect]
+  verification_overrides:
+    min_inliers: 0        # the inlier threshold is the detection threshold, chosen on dev
+  output_dir: results/benchmark
+  # Encoder latency/memory, measured with scripts/profile_encoders.py --tag benchmark on the
+  # selected variants (falls back to extraction-time measurements if absent).
+  encoder_profile: results/metrics/encoder_profile_benchmark.json
