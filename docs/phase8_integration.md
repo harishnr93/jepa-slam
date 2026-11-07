@@ -47,9 +47,9 @@ All checks were run on 2026-11-06 on the development machine (see [installation]
 
 | Check | How | Result |
 |---|---|---|
-| Unit and integration tests | `python -m pytest` | **176 passed, 0 skipped** in 4 min 24 s (incl. the 7 probe tests added afterwards) (CPU + GPU; the real-checkpoint tests run because the weights are present) |
-| Lint and format | `ruff check .` and `ruff format --check .` | clean (90 files) |
-| Command-line tools | `python scripts/<each>.py --help` for all 15 scripts | all succeed |
+| Unit and integration tests | `python -m pytest` | **181 passed, 0 skipped** in 5 min 46 s (incl. the probe, DINOv3 and re-run tests added afterwards) (CPU + GPU; the real-checkpoint tests run because the weights are present) |
+| Lint and format | `ruff check .` and `ruff format --check .` | clean (94 files) |
+| Command-line tools | `python scripts/<each>.py --help` for all 17 scripts | all succeed |
 | CPU fallback | `extract_embeddings.py --config configs/kitti.yaml --encoder {ijepa,dinov2} --max-frames 8 --device cpu --no-cache` | both succeed on the CPU (FP32) |
 | GPU inference | same with `--device cuda` | both succeed on the GTX 1650 Ti (FP32, chosen automatically) |
 | Hard-coded paths | `grep` for `/mnt/`, `/home/`, `C:\` in `src scripts app configs tests` | none in code; only a docstring example in `capture_dashboard.py` and a comment in `kitti_download.py` |
@@ -69,6 +69,44 @@ All checks were run on 2026-11-06 on the development machine (see [installation]
 * **The ORB vocabulary is fitted on development data only.** `vocabulary_plan` refuses any sequence outside `splits.dev`, and the vocabulary's digest is part of the ORB bag-of-words fingerprint.
 * **Release figures use the development thresholds.** The Phase 8 GIF and the dashboard read `thresholds.json`.
 
+## Full pipeline re-run
+
+To refresh every measurement in one consistent session, the complete benchmark (Phase 6 and v2) was re-run **from empty embedding, vocabulary and pair caches** with one command:
+
+```bash
+python scripts/reproduce_pipeline.py --fast-root ~/latent_loop_fast --workers 8
+#    options: --runs v1 v2   --skip-stage   --out results/rerun
+#    -> results/rerun/<benchmark name>/..., results/rerun/pipeline_run.json
+```
+
+The script first copies every 5th frame of the six sequences (plus calibration, times and poses) to a local Linux disk, because image reads from `/mnt/e` dominated earlier runs. The KITTI loader only lists frames whose image exists, so the sampled frame IDs are unchanged. Then, for each benchmark, it runs the development stage, profiles the selected encoder variants and runs the test stage, and compares the outputs with `results/benchmark/<name>`. Neural encoders ran on the GPU (GTX 1650 Ti, FP32), and ORB, HSV, retrieval and verification ran on the CPU (8 worker processes).
+
+| Step | Wall time |
+|---|---|
+| Stage 3,750 KITTI frames to the local disk | 3.5 min |
+| ORB vocabulary (development sequence 05) | 1.2 min |
+| Phase 6: development stage / encoder profile / test stage | 47 min / 5 min / 60 min |
+| v2: development stage / encoder profile / test stage | 46 min / 5 min / 21 min |
+| **Total** | **3 h 8 min** |
+
+The v2 test stage is shorter because it reuses the verified pairs of Phase 6. This is legitimate, because pair caches are keyed by the verification config hash and the decisions are deterministic.
+
+**Outcome.** Accuracy reproduced exactly:
+
+| Check | Phase 6 | v2 |
+|---|---|---|
+| Per-sequence and pooled test metrics (R@1, R@5, mAP, detection AP, precision, recall, F1, TP / FP / FN) | 30 rows, 0 differences | 40 rows, 0 differences |
+| `selection.json`, `thresholds.json` | identical | identical |
+| Test prediction files | 24 / 24 byte-identical | 32 / 32 byte-identical |
+| Verification decisions in the pair caches (every column except timings) | identical | identical |
+
+Only wall-clock fields changed. The re-run's timing files were promoted to `results/benchmark/`, and the encoder profiles to `results/metrics/encoder_profile_benchmark{,_v2}.json`. The cost tables in [Phase 6](phase6_evaluation.md), [Benchmark v2](benchmark_v2.md), the [results summary](results.md) and the README now come from this run. Compared with the first run:
+
+* The GPU encoder times moved by 1–8 %, which is run-to-run variation. For example, I-JEPA took 798 → 834 ms per frame in Phase 6 and 923 → 854 ms in v2.
+* Verification took about 11 % longer per query: with 8 workers on 8 cores, CPU contention costs more than the image reads it saved.
+
+The committed Phase 6 development table also gained its pooled same-direction Recall@1, a column added to the runner after Phase 6. All per-sequence values are unchanged.
+
 ## Issues found and fixed in Phase 8
 
 | Issue | Fix |
@@ -86,7 +124,7 @@ All checks were run on 2026-11-06 on the development machine (see [installation]
 unset PYTHONPATH && source .env/bin/activate
 
 # 1. Everything still passes
-python -m pytest                      # 176 tests, ~5 min on /mnt/e
+python -m pytest                      # 181 tests, ~6 min on /mnt/e
 ruff check . && ruff format --check .
 
 # 2. CPU fallback and GPU smoke test (8 KITTI 00 frames, no cache)

@@ -30,8 +30,8 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.1687438811188811,
-    "index_add_ms_per_frame": 0.051398601398601404,
+    "search_ms_per_query": 0.1654077797202797,
+    "index_add_ms_per_frame": 0.04838199300699301,
     "verify_ms_per_query_mean": 0.0,
     "verify_ms_per_query_median": 0.0
   },
@@ -66,10 +66,10 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.1687438811188811,
-    "index_add_ms_per_frame": 0.051398601398601404,
-    "verify_ms_per_query_mean": 1237.5211999487356,
-    "verify_ms_per_query_median": 1276.9590215019887
+    "search_ms_per_query": 0.1654077797202797,
+    "index_add_ms_per_frame": 0.04838199300699301,
+    "verify_ms_per_query_mean": 1489.5977026367536,
+    "verify_ms_per_query_median": 1549.7043755016568
   },
   "dinov2": {
     "fingerprint": "168932398c",
@@ -102,8 +102,8 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.11455332167832169,
-    "index_add_ms_per_frame": 0.039316433566433565,
+    "search_ms_per_query": 0.13652054195804195,
+    "index_add_ms_per_frame": 0.04606643356643357,
     "verify_ms_per_query_mean": 0.0,
     "verify_ms_per_query_median": 0.0
   },
@@ -138,10 +138,10 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.11455332167832169,
-    "index_add_ms_per_frame": 0.039316433566433565,
-    "verify_ms_per_query_mean": 1259.0951741335182,
-    "verify_ms_per_query_median": 1300.859907000564
+    "search_ms_per_query": 0.13652054195804195,
+    "index_add_ms_per_frame": 0.04606643356643357,
+    "verify_ms_per_query_mean": 1491.4515214773335,
+    "verify_ms_per_query_median": 1537.162481496376
   },
   "orb_bovw": {
     "fingerprint": "a49b354ea2",
@@ -172,8 +172,8 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.13508784965034965,
-    "index_add_ms_per_frame": 0.043524475524475525,
+    "search_ms_per_query": 0.1501673951048951,
+    "index_add_ms_per_frame": 0.047995629370629365,
     "verify_ms_per_query_mean": 0.0,
     "verify_ms_per_query_median": 0.0
   },
@@ -200,8 +200,8 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.1051201923076923,
-    "index_add_ms_per_frame": 0.043270979020979025,
+    "search_ms_per_query": 0.08945017482517481,
+    "index_add_ms_per_frame": 0.03620847902097902,
     "verify_ms_per_query_mean": 0.0,
     "verify_ms_per_query_median": 0.0
   },
@@ -236,8 +236,8 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.11180725524475524,
-    "index_add_ms_per_frame": 0.03870454545454546,
+    "search_ms_per_query": 0.12956905594405596,
+    "index_add_ms_per_frame": 0.04297858391608392,
     "verify_ms_per_query_mean": 0.0,
     "verify_ms_per_query_median": 0.0
   },
@@ -272,9 +272,9 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.11180725524475524,
-    "index_add_ms_per_frame": 0.03870454545454546,
-    "verify_ms_per_query_mean": 1267.290688626272,
-    "verify_ms_per_query_median": 1313.746809998557
+    "search_ms_per_query": 0.12956905594405596,
+    "index_add_ms_per_frame": 0.04297858391608392,
+    "verify_ms_per_query_mean": 1488.2536713867537,
+    "verify_ms_per_query_median": 1544.450342498581
   }
 }

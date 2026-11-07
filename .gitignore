@@ -47,3 +47,6 @@ external/
 *.bin
 checkpoints/
 *.url
+
+# Scratch re-runs (compared with results/benchmark before anything is promoted)
+results/rerun/

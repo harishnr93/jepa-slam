@@ -10,15 +10,17 @@
 
 ## Answer, in short
 
-The evaluation is on held-out KITTI sequences 02, 06, 08 and 09: 2,208 queries, 190 of them true revisits. Thresholds were chosen on sequences 00 and 05 only. The neural encoders ran on the **GPU** (GTX 1650 Ti, FP32); everything else ran on the **CPU**.
+The evaluation is on held-out KITTI sequences 02, 06, 08 and 09: 2,208 queries, 190 of them true revisits. Thresholds were chosen on sequences 00 and 05 only. The neural encoders ran on the **GPU** (GTX 1650 Ti, FP32); everything else ran on the **CPU** (Ryzen 7 4800H, 8 verification workers).
+
+All numbers come from one complete re-run from empty caches ([`scripts/reproduce_pipeline.py`](scripts/reproduce_pipeline.py), 3 h 8 min). It reproduced every accuracy figure, selection, threshold and prediction file exactly; only the timings were refreshed.
 
 | Method | Recall@1 | Detection F1 | False loops per 1,000 | Time per query |
 |---|---|---|---|---|
-| I-JEPA | 0.500 | 0.451 | 57.1 | 798 ms |
-| **I-JEPA + geometric verification** | 0.500 | **0.671** | **0.9** | 2122 ms |
-| DINOv2 | 0.526 | 0.565 | 1.4 | 112 ms |
-| **DINOv2 + geometric verification** | 0.526 | **0.671** | **0.9** | 1393 ms |
-| ORB bag of words | **0.563** | 0.477 | 19.5 | 10.5 ms |
+| I-JEPA | 0.500 | 0.451 | 57.1 | 835 ms |
+| **I-JEPA + geometric verification** | 0.500 | **0.671** | **0.9** | 2303 ms |
+| DINOv2 | 0.526 | 0.565 | 1.4 | 114 ms |
+| **DINOv2 + geometric verification** | 0.526 | **0.671** | **0.9** | 1542 ms |
+| ORB bag of words | **0.563** | 0.477 | 19.5 | 9.4 ms |
 | HSV histogram | 0.537 | 0.407 | 84.2 | 1.9 ms |
 
 * **Geometric verification is what makes a usable detector.** It cuts I-JEPA's false loops from 126 to 2.
@@ -30,7 +32,7 @@ The evaluation is on held-out KITTI sequences 02, 06, 08 and 09: 2,208 queries, 
 Details: [results summary](docs/results.md) · [full evaluation](docs/phase6_evaluation.md)
 
 **Benchmark v2** is a second, single held-out run with settings chosen on development data only: mean-patch pooling, 2–3-frame averaging, and DINOv3 added.
-* DINOv2 without verification reaches F1 0.678 at 36 ms per query. That matches the geometric-verification detectors, which take about 1.3 s per query.
+* DINOv2 without verification reaches F1 0.678 at 37 ms per query. That matches the geometric-verification detectors, which take about 1.5 s per query.
 * DINOv3 (ViT-B/16) is not significantly better than DINOv2.
 * I-JEPA is still the weakest neural descriptor.
 
@@ -60,7 +62,7 @@ cd jepa_slam && unset PYTHONPATH            # ROS 2 setups leak into PYTHONPATH
 python3.12 -m venv .env && source .env/bin/activate
 pip install -e ".[dev,ml,dashboard]"
 
-python -m pytest                            # 179 tests
+python -m pytest                            # 181 tests
 streamlit run app/streamlit_app.py          # dashboard over the committed benchmark results
 ```
 
@@ -79,7 +81,11 @@ python scripts/generate_visualizations.py --phase 6                # benchmark f
 python scripts/generate_visualizations.py --phase 8                # the GIF above
 ```
 
-The exact arguments, run times and options of each step are in the phase documents below.
+The exact arguments, run times and options of each step are in the phase documents below. To repeat the whole benchmark (Phase 6 and v2) in one command and check it against the committed results:
+
+```bash
+python scripts/reproduce_pipeline.py --fast-root ~/latent_loop_fast   # 3 h 8 min; outputs in results/rerun/
+```
 
 ## Documentation
 

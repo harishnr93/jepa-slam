@@ -15,17 +15,19 @@ The numbers here are the held-out Phase 6 evaluation. The full protocol, every t
 
 **Devices.**
 * I-JEPA ViT-H/14 and DINOv2 ViT-B/14 descriptors: GPU (GTX 1650 Ti, FP32).
-* HSV, ORB bag of words, FAISS retrieval and geometric verification: CPU (Ryzen 7 4800H).
+* HSV, ORB bag of words, FAISS retrieval and geometric verification: CPU (Ryzen 7 4800H, 8 worker processes).
+
+**Reproduced.** The timings come from one complete re-run of Phase 6 and v2 from empty caches, with the KITTI frames on a local disk (`scripts/reproduce_pipeline.py`, 3 h 8 min). Every metric, selection, threshold, prediction file and verification decision matched the earlier run exactly; see [Phase 8: full re-run](phase8_integration.md#full-pipeline-re-run).
 
 ## Headline table (pooled test)
 
 | Method | R@1 | mAP | Precision | Recall | **F1** | False loops per 1,000 queries | End-to-end per query |
 |---|---|---|---|---|---|---|---|
-| I-JEPA | 0.500 | 0.466 | 0.422 | 0.484 | 0.451 | 57.1 | 798 ms (GPU encoder) |
-| I-JEPA + GV | 0.500 | 0.466 | **0.980** | **0.511** | **0.671** | **0.9** | 2122 ms (GPU + CPU GV) |
-| DINOv2 | 0.526 | **0.521** | 0.962 | 0.400 | 0.565 | 1.4 | 112 ms (GPU encoder) |
-| DINOv2 + GV | 0.526 | **0.521** | **0.980** | **0.511** | **0.671** | **0.9** | 1393 ms (GPU + CPU GV) |
-| ORB bag of words | **0.563** | 0.496 | 0.629 | 0.384 | 0.477 | 19.5 | 10.5 ms (CPU) |
+| I-JEPA | 0.500 | 0.466 | 0.422 | 0.484 | 0.451 | 57.1 | 835 ms (GPU encoder) |
+| I-JEPA + GV | 0.500 | 0.466 | **0.980** | **0.511** | **0.671** | **0.9** | 2303 ms (GPU + CPU GV) |
+| DINOv2 | 0.526 | **0.521** | 0.962 | 0.400 | 0.565 | 1.4 | 114 ms (GPU encoder) |
+| DINOv2 + GV | 0.526 | **0.521** | **0.980** | **0.511** | **0.671** | **0.9** | 1542 ms (GPU + CPU GV) |
+| ORB bag of words | **0.563** | 0.496 | 0.629 | 0.384 | 0.477 | 19.5 | 9.4 ms (CPU) |
 | HSV histogram | 0.537 | 0.507 | 0.340 | 0.505 | 0.407 | 84.2 | 1.9 ms (CPU) |
 
 GV is geometric verification: ORB matching, then essential-matrix RANSAC on the top-5 candidates.
@@ -63,7 +65,7 @@ v2 widened the development-stage choices: pooling, short causal frame averaging,
 * Small test set (190 revisit queries), and consecutive queries are correlated.
 * One camera, one frame stride and one 5 m radius.
 * No pose-graph back-end, so no trajectory-error evaluation.
-* Verification latency was measured with 6 worker processes reading from a slow `/mnt/e` drive.
+* Verification latency is measured per query inside 8 parallel worker processes, so it includes CPU contention; a single dedicated process would be faster.
 
 See [Phase 6: limitations](phase6_evaluation.md#limitations).
 

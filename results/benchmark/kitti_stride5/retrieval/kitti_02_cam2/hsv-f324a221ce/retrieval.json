@@ -8,9 +8,9 @@
     "mode": "causal"
   },
   "timing": {
-    "index_build_s": 0.035212,
-    "search_s": 0.092008,
-    "total_s": 0.127444,
-    "search_ms_per_query": 0.098615
+    "index_build_s": 0.033254,
+    "search_s": 0.085677,
+    "total_s": 0.119129,
+    "search_ms_per_query": 0.09183
   }
 }

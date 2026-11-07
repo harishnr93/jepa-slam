@@ -125,7 +125,7 @@ Neither threshold, nor the preprocessing variant, ever sees test data.
 
 ## Steps to run Phase 6
 
-All commands run from the repository root with `.env` active and `PYTHONPATH` unset. The ORB vocabulary (Phase 5, step 3) must exist. Descriptors are extracted on demand, so the first run extracts every development and test sequence: about 2–2.5 h here on the GTX 1650 Ti, dominated by I-JEPA in `aspect` mode and image reads from `/mnt/e`.
+All commands run from the repository root with `.env` active and `PYTHONPATH` unset. The ORB vocabulary (Phase 5, step 3) must exist. Descriptors are extracted on demand, so the first run extracts every development and test sequence: about 2–2.5 h here on the GTX 1650 Ti, dominated by I-JEPA in `aspect` mode and image reads from `/mnt/e`. With the sampled frames staged to a local disk, the full Phase 6 run from empty caches took 1 h 53 min (development 47 min, profile 5 min, test 60 min; [Phase 8](phase8_integration.md#full-pipeline-re-run)).
 
 ```bash
 # 1. Development stage: variant selection, verification, thresholds (18 min with cached 00 descriptors)
@@ -201,21 +201,21 @@ At the stricter development threshold for 100 % precision, test recall and preci
 | ORB bag of words | 0.569 | 0.839 | 0.000 | 0.200 |
 | HSV histogram | 0.429 | 0.829 | 0.000 | 0.000 |
 
-**Computational measurements** (encoder: `profile_encoders.py`; retrieval and verification: measured on the test sequences):
+**Computational measurements** (encoder: `profile_encoders.py`; retrieval and verification: measured on the test sequences with 8 CPU workers; all from the complete re-run in [Phase 8](phase8_integration.md#full-pipeline-re-run), which reproduced every accuracy number above exactly):
 
 | Method | Encoder (device) | Retrieval / query | Verification / query (CPU) | End-to-end / query | Peak GPU | Host RAM increase | Test descriptors |
 |---|---|---|---|---|---|---|---|
-| I-JEPA (`aspect`) | 798 ms (GPU) | 0.26 ms | none | 798 ms | 2853 MB | 306 MB | 11.2 MB (1280-D) |
-| I-JEPA + GV | 798 ms (GPU) | 0.26 ms | 1324 ms | 2122 ms | 2853 MB | 306 MB | 11.2 MB |
-| DINOv2 (`aspect`) | 112 ms (GPU) | 0.19 ms | none | 112 ms | 567 MB | 601 MB | 6.7 MB (768-D) |
-| DINOv2 + GV | 112 ms (GPU) | 0.19 ms | 1281 ms | 1393 ms | 567 MB | 601 MB | 6.7 MB |
-| ORB bag of words | 10.3 ms (CPU) | 0.23 ms | none | 10.5 ms | none | 1.9 MB | 8.7 MB (1000-D) |
-| HSV histogram | 1.8 ms (CPU) | 0.13 ms | none | 1.9 ms | none | 0.8 MB | 2.2 MB (256-D) |
+| I-JEPA (`aspect`) | 834 ms (GPU) | 0.23 ms | none | 835 ms | 2853 MB | 373 MB | 11.2 MB (1280-D) |
+| I-JEPA + GV | 834 ms (GPU) | 0.23 ms | 1468 ms | 2303 ms | 2853 MB | 373 MB | 11.2 MB |
+| DINOv2 (`aspect`) | 114 ms (GPU) | 0.16 ms | none | 114 ms | 567 MB | 274 MB | 6.7 MB (768-D) |
+| DINOv2 + GV | 114 ms (GPU) | 0.16 ms | 1428 ms | 1542 ms | 567 MB | 274 MB | 6.7 MB |
+| ORB bag of words | 9.2 ms (CPU) | 0.18 ms | none | 9.4 ms | none | 1.9 MB | 8.7 MB (1000-D) |
+| HSV histogram | 1.8 ms (CPU) | 0.12 ms | none | 1.9 ms | none | 0.5 MB | 2.2 MB (256-D) |
 
 ### Results interpretation
 
 * **Geometric verification is what makes a detector usable.** At the development thresholds, every retrieval-only method except DINOv2 produces tens of false loops per 1,000 test queries: I-JEPA 57, HSV 84, ORB bag of words 19. With GV, I-JEPA drops to 0.9 FP per 1,000 (126 → 2 false loops) and finds slightly more correct loops (92 → 97). For DINOv2, GV adds 21 correct loops at the same false-alarm level. In a paired test over the 190 positive queries, DINOv2 + GV is right where DINOv2 is wrong 27 times, and the reverse 6 times (exact McNemar p = 3 × 10⁻⁴).
-* **With GV, I-JEPA and DINOv2 are indistinguishable here.** Both reach F1 0.671 with 97 correct and 2 wrong loops; they agree on 98 % of the positive test queries (2 vs 2 discordant). Their detection APs differ by 0.001. DINOv2 achieves this with an encoder 7× faster (112 vs 798 ms) using 5× less GPU memory.
+* **With GV, I-JEPA and DINOv2 are indistinguishable here.** Both reach F1 0.671 with 97 correct and 2 wrong loops; they agree on 98 % of the positive test queries (2 vs 2 discordant). Their detection APs differ by 0.001. DINOv2 achieves this with an encoder 7× faster (114 vs 834 ms) using 5× less GPU memory.
 * **Without GV, DINOv2 is the most reliable retrieval-only detector** (precision 0.96 at its development threshold), and I-JEPA the least reliable among the neural ones (precision 0.42). I-JEPA's development threshold (cosine 0.968) does not transfer: on test it admits many confident wrong candidates, whose cosine distribution is compressed near 1 (see Phase 5).
 * **Retrieval ranks the methods differently from detection.** At rank 1 the classical ORB bag of words is best on test (R@1 0.563; same-direction 0.954). On the paired test queries it beats I-JEPA (13 vs 1, p = 0.002). The I-JEPA vs DINOv2 difference at rank 1 is not significant (5 vs 10, p = 0.30).
 * **Conclusions on JEPA.** On these sequences, frozen I-JEPA descriptors with geometric verification match DINOv2 with geometric verification for loop detection. Without verification, I-JEPA is worse than DINOv2. It is also several times more expensive. **No result here shows I-JEPA outperforming the baselines.**
@@ -233,7 +233,7 @@ At the stricter development threshold for 100 % precision, test recall and preci
 * **Small test set.** 190 test revisit queries, dominated by 02, 06 and 08. Consecutive queries are correlated, so the McNemar p-values above overstate the evidence.
 * **Settings.** One camera (left colour), every 5th frame, one ground-truth radius (5 m), top-5 verification and default verification checks. Only the preprocessing variant and the detection threshold were tuned, both on development data.
 * **ORB vocabulary.** It was fitted on development sequence 05. Its development metrics on 05 are in-sample; its test metrics are not.
-* **Latency estimates.** Verification latency was measured inside 6 parallel worker processes reading images from `/mnt/e`; a single process on a local disk would be faster. The End-to-end column sums per-stage means for streaming one frame at a time, and assumes the earlier frames' ORB features are cached.
+* **Latency estimates.** Verification latency was measured inside 8 parallel worker processes on 8 cores, with images on a local disk. Per query it was about 11 % higher than in the first run (6 workers, images on `/mnt/e`), so CPU contention matters more than disk reads; a single dedicated process would be faster. The End-to-end column sums per-stage means for streaming one frame at a time, and assumes the earlier frames' ORB features are cached.
 * **No back-end.** No pose-graph optimisation or trajectory error is evaluated; detected loops are not used for SLAM here.
 
 **Detection precision-recall curves** (pooled; one hypothesis per query). Left: development, where the thresholds were chosen. Right: test, with dots at the operating point given by the development threshold.

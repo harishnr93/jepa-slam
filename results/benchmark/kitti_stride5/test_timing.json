@@ -30,8 +30,8 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.19782386363636364,
-    "index_add_ms_per_frame": 0.06523863636363636,
+    "search_ms_per_query": 0.1682194055944056,
+    "index_add_ms_per_frame": 0.06426617132867132,
     "verify_ms_per_query_mean": 0.0,
     "verify_ms_per_query_median": 0.0
   },
@@ -66,10 +66,10 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.19782386363636364,
-    "index_add_ms_per_frame": 0.06523863636363636,
-    "verify_ms_per_query_mean": 1323.7020749487358,
-    "verify_ms_per_query_median": 1360.0912359967483
+    "search_ms_per_query": 0.1682194055944056,
+    "index_add_ms_per_frame": 0.06426617132867132,
+    "verify_ms_per_query_mean": 1468.384717129507,
+    "verify_ms_per_query_median": 1512.0364389999218
   },
   "dinov2": {
     "fingerprint": "08f86d4615",
@@ -102,8 +102,8 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.1418575174825175,
-    "index_add_ms_per_frame": 0.048006555944055944,
+    "search_ms_per_query": 0.1198806818181818,
+    "index_add_ms_per_frame": 0.040064685314685315,
     "verify_ms_per_query_mean": 0.0,
     "verify_ms_per_query_median": 0.0
   },
@@ -138,10 +138,10 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.1418575174825175,
-    "index_add_ms_per_frame": 0.048006555944055944,
-    "verify_ms_per_query_mean": 1280.753253843663,
-    "verify_ms_per_query_median": 1326.791687497907
+    "search_ms_per_query": 0.1198806818181818,
+    "index_add_ms_per_frame": 0.040064685314685315,
+    "verify_ms_per_query_mean": 1427.9505074374783,
+    "verify_ms_per_query_median": 1484.8159059978502
   },
   "orb_bovw": {
     "fingerprint": "a49b354ea2",
@@ -172,8 +172,8 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.17233173076923075,
-    "index_add_ms_per_frame": 0.057115384615384616,
+    "search_ms_per_query": 0.139756993006993,
+    "index_add_ms_per_frame": 0.04312368881118881,
     "verify_ms_per_query_mean": 0.0,
     "verify_ms_per_query_median": 0.0
   },
@@ -200,8 +200,8 @@
       }
     },
     "frames": 2288,
-    "search_ms_per_query": 0.09114554195804196,
-    "index_add_ms_per_frame": 0.03654239510489511,
+    "search_ms_per_query": 0.08555332167832168,
+    "index_add_ms_per_frame": 0.034749125874125875,
     "verify_ms_per_query_mean": 0.0,
     "verify_ms_per_query_median": 0.0
   }

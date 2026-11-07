@@ -23,12 +23,12 @@ The test sequences were evaluated **once** for v2. This is the second look at th
 **Commands.**
 
 ```bash
-python scripts/run_benchmark.py --config configs/benchmark_v2.yaml --stage dev    # 2 h 29 min (GPU + CPU)
+python scripts/run_benchmark.py --config configs/benchmark_v2.yaml --stage dev    # 46 min from empty caches (GPU + CPU)
 python scripts/profile_encoders.py --config configs/benchmark_v2.yaml --tag benchmark_v2 --stride 5 \
     --frames 64 --set dataset.name=kitti dataset.root=data/raw/kitti/dataset "dataset.sequence='00'" \
     ijepa.resize_mode=aspect dinov2.resize_mode=squash dinov2.pooling=mean \
     dinov3.checkpoint=vitb16 dinov3.resize_mode=squash dinov3.pooling=mean
-python scripts/run_benchmark.py --config configs/benchmark_v2.yaml --stage test   # 27 min
+python scripts/run_benchmark.py --config configs/benchmark_v2.yaml --stage test   # 21 min
 python scripts/generate_visualizations.py --phase 6 --config configs/benchmark_v2.yaml \
     --output-dir assets/benchmark_v2 --gif-sequence 02
 streamlit run app/streamlit_app.py -- --config configs/benchmark_v2.yaml
@@ -101,25 +101,25 @@ Pooled over sequences 02, 06, 08 and 09: 2,208 queries, 190 with a true revisit.
 
 ## Cost
 
-Encoder from `profile_encoders.py` (64 KITTI frames in RAM). Retrieval and verification are measured on the test set.
+Encoder from `profile_encoders.py` (64 KITTI frames in RAM). Retrieval and verification are measured on the test set (CPU, 8 worker processes). All values are from the complete re-run described in [Phase 8](phase8_integration.md#full-pipeline-re-run), the same session as the Phase 6 numbers.
 
 | Method | Encoder (device) | End-to-end per query | Peak GPU |
 |---|---|---|---|
-| I-JEPA (+ GV) | 923 ms (GPU) | 923 ms (2160 ms) | 2853 MB |
-| DINOv2 (+ GV), `squash` | 36 ms (GPU) | **36 ms** (1295 ms) | 401 MB |
-| DINOv3 ViT-B/16 (+ GV), `squash` | 29 ms (GPU) | **29 ms** (1297 ms) | 388 MB |
-| ORB bag of words | 10 ms (CPU) | 10.5 ms | — |
-| HSV histogram | 1.6 ms (CPU) | 1.8 ms | — |
+| I-JEPA (+ GV) | 854 ms (GPU) | 854 ms (2344 ms) | 2853 MB |
+| DINOv2 (+ GV), `squash` | 37 ms (GPU) | **37 ms** (1529 ms) | 401 MB |
+| DINOv3 ViT-B/16 (+ GV), `squash` | 27 ms (GPU) | **27 ms** (1516 ms) | 388 MB |
+| ORB bag of words | 9.3 ms (CPU) | 9.5 ms | — |
+| HSV histogram | 1.7 ms (CPU) | 1.8 ms | — |
 
-* **`squash` is much cheaper than `aspect`.** It feeds a 224 × 224 image, 196 patches at ViT/16. Phase 6's `aspect` mode for DINOv2 used a wider input: 112 ms.
+* **`squash` is much cheaper than `aspect`.** It feeds a 224 × 224 image, 196 patches at ViT/16. Phase 6's `aspect` mode for DINOv2 used a wider input: 114 ms.
 * **Frame averaging costs nothing measurable.** It is one vector sum per frame.
-* I-JEPA's encoder took 923 ms here against 798 ms in the Phase 6 profile. The model and variant are the same, so this is run-to-run variation on this GPU.
+* I-JEPA's encoder took 854 ms here against 834 ms in the Phase 6 profile of the same session. The model and variant are the same, so this is run-to-run variation on this GPU (about 2 %).
 
 ## Reading the results
 
 1. **The development-selected changes generalise to the retrieval-only detectors.**
    * The largest gain is for DINOv2. With mean-patch pooling and 2-frame averaging, it finds 99 correct loops instead of 76 (p = 6 × 10⁻⁶) at the same 3 false loops.
-   * Its F1 of 0.678 matches the geometric-verification detectors, at **36 ms instead of about 1.3 s per query**.
+   * Its F1 of 0.678 matches the geometric-verification detectors, at **37 ms instead of about 1.5 s per query**.
    * ORB bag of words and I-JEPA keep their recall but make far fewer false loops: 43 → 5 and 126 → 65.
 2. **Geometric verification no longer adds F1 on top of a strong descriptor.**
    * All GV detectors sit at F1 0.655–0.669, as in Phase 6.
@@ -131,7 +131,7 @@ Encoder from `profile_encoders.py` (64 KITTI frames in RAM). Retrieval and verif
    * The paper's claim that DINOv3 aligns best is not contradicted, but on this loop-closure benchmark it buys no measurable accuracy over DINOv2 + mean pooling.
 4. **I-JEPA remains the weakest neural descriptor.**
    * With GV it ties the others (96 correct, 2 false loops).
-   * Its retrieval (Recall@1 0.484, mAP 0.497) stays below DINOv2 and DINOv3, at 25–30× their encoder cost.
+   * Its retrieval (Recall@1 0.484, mAP 0.497) stays below DINOv2 and DINOv3, at 23–31× their encoder cost.
    * **No result shows I-JEPA outperforming the baselines.**
 
 ## Caveats
