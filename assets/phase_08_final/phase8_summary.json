@@ -1,0 +1,71 @@
+{
+  "phase": 8,
+  "sequence": "06",
+  "method": "ijepa_gv",
+  "query": 1010,
+  "threshold": 133.0,
+  "top5": [
+    {
+      "candidate": 185,
+      "rank": 1,
+      "inliers": 255,
+      "reason": "accepted",
+      "accepted_checks": true,
+      "matches_cache": true,
+      "cosine": 0.9869208931922913,
+      "gt_distance_m": 2.103641225418343
+    },
+    {
+      "candidate": 805,
+      "rank": 2,
+      "inliers": 9,
+      "reason": "accepted",
+      "accepted_checks": true,
+      "matches_cache": true,
+      "cosine": 0.9812769293785095,
+      "gt_distance_m": 265.15020208126634
+    },
+    {
+      "candidate": 190,
+      "rank": 3,
+      "inliers": 181,
+      "reason": "accepted",
+      "accepted_checks": true,
+      "matches_cache": true,
+      "cosine": 0.9795888066291809,
+      "gt_distance_m": 2.2717527895768925
+    },
+    {
+      "candidate": 180,
+      "rank": 4,
+      "inliers": 64,
+      "reason": "accepted",
+      "accepted_checks": true,
+      "matches_cache": true,
+      "cosine": 0.9783158302307129,
+      "gt_distance_m": 7.0212927588122875
+    },
+    {
+      "candidate": 200,
+      "rank": 5,
+      "inliers": 15,
+      "reason": "accepted",
+      "accepted_checks": true,
+      "matches_cache": true,
+      "cosine": 0.9727662801742554,
+      "gt_distance_m": 9.780955980973596
+    }
+  ],
+  "decision": {
+    "accepted": true,
+    "outcome": "TP",
+    "saved_prediction_score": 255.0
+  },
+  "outputs": {
+    "pipeline_gif": "pipeline_end_to_end.gif"
+  },
+  "gif_frames": 114,
+  "gif_fps": 8.0,
+  "gif_size_mb": 2.19,
+  "render_seconds": 101.9
+}

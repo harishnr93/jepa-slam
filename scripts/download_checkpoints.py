@@ -6,6 +6,13 @@ Usage:
     python scripts/download_checkpoints.py ijepa --name vith14_in1k
     python scripts/download_checkpoints.py ijepa --name vith14_in1k --skip-download
     python scripts/download_checkpoints.py dinov2 --name vitb14       # ~346 MB
+    python scripts/download_checkpoints.py dinov3 --url "<URL from Meta's e-mail>"
+    python scripts/download_checkpoints.py dinov3 --file PATH/TO/dinov3_vitb16_*.pth
+
+DINOv3 weights are licence-gated (DINOv3 License): request them at
+https://ai.meta.com/resources/models-and-libraries/dinov3-downloads/ and pass the personal
+URL from Meta's e-mail (or a file you downloaded). The file is accepted only if its SHA-256
+starts with the hash in the official file name (e.g. 73cec8be).
 
 DINOv2 backbones are stored as checkpoints/dinov2/<file>.pth with a JSON sidecar holding
 the SHA-256 (part of the embedding-cache fingerprint). An existing file of the expected
@@ -28,6 +35,8 @@ import sys
 from latent_loop.encoders.dinov2 import CHECKPOINTS as DINO_CHECKPOINTS
 from latent_loop.encoders.dinov2 import checkpoint_path as dino_checkpoint_path
 from latent_loop.encoders.dinov2 import write_sidecar
+from latent_loop.encoders.dinov3 import CHECKPOINTS as DINO3_CHECKPOINTS
+from latent_loop.encoders.dinov3 import checkpoint_path as dino3_checkpoint_path
 from latent_loop.encoders.ijepa import (
     CHECKPOINTS,
     extract_target_encoder,
@@ -52,8 +61,47 @@ def main() -> int:
     dn = sub.add_parser("dinov2", help="download a DINOv2 backbone checkpoint")
     dn.add_argument("--name", default="vitb14", choices=sorted(DINO_CHECKPOINTS))
     dn.add_argument("--dir", default="checkpoints", help="checkpoint root directory")
+    d3 = sub.add_parser("dinov3", help="fetch a licence-gated DINOv3 backbone (URL or file)")
+    d3.add_argument("--name", default="vitb16", choices=sorted(DINO3_CHECKPOINTS))
+    d3.add_argument("--dir", default="checkpoints", help="checkpoint root directory")
+    src = d3.add_mutually_exclusive_group()
+    src.add_argument("--url", help="personal download URL from Meta's e-mail")
+    src.add_argument("--file", help="an already downloaded checkpoint file")
     args = parser.parse_args()
     setup_logging()
+
+    if args.command == "dinov3":
+        spec3 = DINO3_CHECKPOINTS[args.name]
+        path = dino3_checkpoint_path(resolve_path(args.dir), args.name)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if args.file:
+            shutil.copyfile(args.file, path)
+        elif args.url:
+            if shutil.which("curl") is None:
+                print("curl is required for downloading", file=sys.stderr)
+                return 1
+            print(f"Downloading {spec3.filename}\n -> {path} (resumable with -C -)")
+            subprocess.run(
+                ["curl", "-fL", "--retry", "5", "-C", "-", "-o", str(path), args.url], check=True
+            )
+        elif not path.is_file():
+            print(
+                f"{path} not found. DINOv3 weights are licence-gated; pass --url or --file "
+                "(see the module docstring)",
+                file=sys.stderr,
+            )
+            return 1
+        meta = write_sidecar(path)
+        if not meta["sha256"].startswith(spec3.sha256_prefix):
+            print(
+                f"SHA-256 {meta['sha256'][:8]}... does not match the official "
+                f"{spec3.sha256_prefix}; refusing the file",
+                file=sys.stderr,
+            )
+            path.with_suffix(".json").unlink()
+            return 1
+        print(json.dumps(meta, indent=2))
+        return 0
 
     if args.command == "dinov2":
         spec = DINO_CHECKPOINTS[args.name]

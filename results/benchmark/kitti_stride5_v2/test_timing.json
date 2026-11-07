@@ -1,0 +1,280 @@
+{
+  "ijepa": {
+    "fingerprint": "fe45894e2c",
+    "info": {
+      "name": "ijepa",
+      "checkpoint": "vith14_in1k",
+      "source_sha256": "0382013c481743e9ccea89f970bc6c6aa126aa19a62127500d6e672a641aae22",
+      "arch": "vit_huge",
+      "patch_size": 14,
+      "image_size": 224,
+      "resize_mode": "aspect",
+      "normalization": {
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "pooling": "mean",
+      "l2_normalized": true,
+      "embedding_dim": 1280,
+      "runtime": {
+        "device": "cuda",
+        "precision": "fp32"
+      }
+    },
+    "frames": 2288,
+    "search_ms_per_query": 0.1687438811188811,
+    "index_add_ms_per_frame": 0.051398601398601404,
+    "verify_ms_per_query_mean": 0.0,
+    "verify_ms_per_query_median": 0.0
+  },
+  "ijepa_gv": {
+    "fingerprint": "fe45894e2c",
+    "info": {
+      "name": "ijepa",
+      "checkpoint": "vith14_in1k",
+      "source_sha256": "0382013c481743e9ccea89f970bc6c6aa126aa19a62127500d6e672a641aae22",
+      "arch": "vit_huge",
+      "patch_size": 14,
+      "image_size": 224,
+      "resize_mode": "aspect",
+      "normalization": {
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "pooling": "mean",
+      "l2_normalized": true,
+      "embedding_dim": 1280,
+      "runtime": {
+        "device": "cuda",
+        "precision": "fp32"
+      }
+    },
+    "frames": 2288,
+    "search_ms_per_query": 0.1687438811188811,
+    "index_add_ms_per_frame": 0.051398601398601404,
+    "verify_ms_per_query_mean": 1237.5211999487356,
+    "verify_ms_per_query_median": 1276.9590215019887
+  },
+  "dinov2": {
+    "fingerprint": "168932398c",
+    "info": {
+      "name": "dinov2",
+      "checkpoint": "vitb14",
+      "source_sha256": "0b8b82f85de91b424aded121c7e1dcc2b7bc6d0adeea651bf73a13307fad8c73",
+      "arch": "vit_base patch14",
+      "patch_size": 14,
+      "image_size": 224,
+      "resize_mode": "squash",
+      "normalization": {
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "pooling": "mean",
+      "l2_normalized": true,
+      "embedding_dim": 768,
+      "runtime": {
+        "device": "cuda",
+        "precision": "fp32"
+      }
+    },
+    "frames": 2288,
+    "search_ms_per_query": 0.11455332167832169,
+    "index_add_ms_per_frame": 0.039316433566433565,
+    "verify_ms_per_query_mean": 0.0,
+    "verify_ms_per_query_median": 0.0
+  },
+  "dinov2_gv": {
+    "fingerprint": "168932398c",
+    "info": {
+      "name": "dinov2",
+      "checkpoint": "vitb14",
+      "source_sha256": "0b8b82f85de91b424aded121c7e1dcc2b7bc6d0adeea651bf73a13307fad8c73",
+      "arch": "vit_base patch14",
+      "patch_size": 14,
+      "image_size": 224,
+      "resize_mode": "squash",
+      "normalization": {
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "pooling": "mean",
+      "l2_normalized": true,
+      "embedding_dim": 768,
+      "runtime": {
+        "device": "cuda",
+        "precision": "fp32"
+      }
+    },
+    "frames": 2288,
+    "search_ms_per_query": 0.11455332167832169,
+    "index_add_ms_per_frame": 0.039316433566433565,
+    "verify_ms_per_query_mean": 1259.0951741335182,
+    "verify_ms_per_query_median": 1300.859907000564
+  },
+  "orb_bovw": {
+    "fingerprint": "a49b354ea2",
+    "info": {
+      "name": "orb_bovw",
+      "vocabulary_digest": "d0075f2b4955",
+      "vocabulary_size": 1000,
+      "vocabulary_fit_sources": [
+        {
+          "dataset_key": "kitti_05_cam2",
+          "frames": 553,
+          "stride": 5
+        }
+      ],
+      "orb": {
+        "n_features": 1000,
+        "scale_factor": 1.2,
+        "n_levels": 8,
+        "edge_threshold": 31,
+        "fast_threshold": 20
+      },
+      "tfidf": true,
+      "l2_normalized": true,
+      "embedding_dim": 1000,
+      "runtime": {
+        "device": "cpu",
+        "precision": "fp32"
+      }
+    },
+    "frames": 2288,
+    "search_ms_per_query": 0.13508784965034965,
+    "index_add_ms_per_frame": 0.043524475524475525,
+    "verify_ms_per_query_mean": 0.0,
+    "verify_ms_per_query_median": 0.0
+  },
+  "hsv": {
+    "fingerprint": "f324a221ce",
+    "info": {
+      "name": "hsv",
+      "bins_hsv": [
+        16,
+        4,
+        4
+      ],
+      "grid": [
+        1,
+        1
+      ],
+      "work_width": 320,
+      "transform": "per-cell normalised histogram -> sqrt (Hellinger)",
+      "l2_normalized": true,
+      "embedding_dim": 256,
+      "runtime": {
+        "device": "cpu",
+        "precision": "fp32"
+      }
+    },
+    "frames": 2288,
+    "search_ms_per_query": 0.1051201923076923,
+    "index_add_ms_per_frame": 0.043270979020979025,
+    "verify_ms_per_query_mean": 0.0,
+    "verify_ms_per_query_median": 0.0
+  },
+  "dinov3": {
+    "fingerprint": "d065de26b7",
+    "info": {
+      "name": "dinov3",
+      "checkpoint": "vitb16",
+      "source_sha256": "73cec8be7427c8655ceced13ce62f6e20a1fa90d1b4d4a550df17a1144081a7c",
+      "arch": "dinov3_vitb16 (official dinov3 code)",
+      "patch_size": 16,
+      "image_size": 224,
+      "resize_mode": "squash",
+      "normalization": {
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "pooling": "mean",
+      "l2_normalized": true,
+      "embedding_dim": 768,
+      "runtime": {
+        "device": "cuda",
+        "precision": "fp32"
+      }
+    },
+    "frames": 2288,
+    "search_ms_per_query": 0.11180725524475524,
+    "index_add_ms_per_frame": 0.03870454545454546,
+    "verify_ms_per_query_mean": 0.0,
+    "verify_ms_per_query_median": 0.0
+  },
+  "dinov3_gv": {
+    "fingerprint": "d065de26b7",
+    "info": {
+      "name": "dinov3",
+      "checkpoint": "vitb16",
+      "source_sha256": "73cec8be7427c8655ceced13ce62f6e20a1fa90d1b4d4a550df17a1144081a7c",
+      "arch": "dinov3_vitb16 (official dinov3 code)",
+      "patch_size": 16,
+      "image_size": 224,
+      "resize_mode": "squash",
+      "normalization": {
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "pooling": "mean",
+      "l2_normalized": true,
+      "embedding_dim": 768,
+      "runtime": {
+        "device": "cuda",
+        "precision": "fp32"
+      }
+    },
+    "frames": 2288,
+    "search_ms_per_query": 0.11180725524475524,
+    "index_add_ms_per_frame": 0.03870454545454546,
+    "verify_ms_per_query_mean": 1267.290688626272,
+    "verify_ms_per_query_median": 1313.746809998557
+  }
+}

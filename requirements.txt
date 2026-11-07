@@ -1,5 +1,4 @@
 # Runtime dependencies (tested with Python 3.12.13 on Ubuntu 22.04 / WSL2).
-# DINOv2 and Streamlit are added in the phases that need them.
 numpy>=1.26,<2.3
 scipy>=1.11
 opencv-python-headless>=4.9,<5
@@ -14,6 +13,10 @@ torch==2.15.0
 
 # Phase 3: exact cosine retrieval (CPU)
 faiss-cpu==1.15.1
+
+# Phase 7: dashboard (tested 1.67.0 / 7.1.0)
+streamlit==1.67.0
+plotly==7.1.0
 
 # Development
 pytest>=8.0

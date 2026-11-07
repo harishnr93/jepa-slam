@@ -1,0 +1,75 @@
+{
+  "dinov2": {
+    "variant": "resize_mode=squash,pooling=mean,window=2",
+    "dev_map": {
+      "resize_mode=squash,pooling=cls,window=1": 0.7983070134446282,
+      "resize_mode=squash,pooling=cls,window=2": 0.8204663338376477,
+      "resize_mode=squash,pooling=cls,window=3": 0.8101992917101652,
+      "resize_mode=squash,pooling=mean,window=1": 0.8411868161521784,
+      "resize_mode=squash,pooling=mean,window=2": 0.8461561413540619,
+      "resize_mode=squash,pooling=mean,window=3": 0.8346542154103833,
+      "resize_mode=aspect,pooling=cls,window=1": 0.803821843055432,
+      "resize_mode=aspect,pooling=cls,window=2": 0.8145118405092281,
+      "resize_mode=aspect,pooling=cls,window=3": 0.8020177417075479,
+      "resize_mode=aspect,pooling=mean,window=1": 0.8264616701186354,
+      "resize_mode=aspect,pooling=mean,window=2": 0.8312820930515046,
+      "resize_mode=aspect,pooling=mean,window=3": 0.8182875587243101
+    }
+  },
+  "dinov3": {
+    "variant": "checkpoint=vitb16,resize_mode=squash,pooling=mean,window=2",
+    "dev_map": {
+      "checkpoint=vitb16,resize_mode=squash,pooling=cls,window=1": 0.807572261709012,
+      "checkpoint=vitb16,resize_mode=squash,pooling=cls,window=2": 0.8300877324027849,
+      "checkpoint=vitb16,resize_mode=squash,pooling=cls,window=3": 0.8271220208969948,
+      "checkpoint=vitb16,resize_mode=squash,pooling=mean,window=1": 0.8345347706079268,
+      "checkpoint=vitb16,resize_mode=squash,pooling=mean,window=2": 0.8545056654652429,
+      "checkpoint=vitb16,resize_mode=squash,pooling=mean,window=3": 0.8475571509496908,
+      "checkpoint=vitb16,resize_mode=aspect,pooling=cls,window=1": 0.814216875674647,
+      "checkpoint=vitb16,resize_mode=aspect,pooling=cls,window=2": 0.830503719140771,
+      "checkpoint=vitb16,resize_mode=aspect,pooling=cls,window=3": 0.8306846432002625,
+      "checkpoint=vitb16,resize_mode=aspect,pooling=mean,window=1": 0.8335686333173058,
+      "checkpoint=vitb16,resize_mode=aspect,pooling=mean,window=2": 0.8486535468650684,
+      "checkpoint=vitb16,resize_mode=aspect,pooling=mean,window=3": 0.8407148834998838,
+      "checkpoint=vitl16,resize_mode=squash,pooling=cls,window=1": 0.793460104458074,
+      "checkpoint=vitl16,resize_mode=squash,pooling=cls,window=2": 0.813037406993117,
+      "checkpoint=vitl16,resize_mode=squash,pooling=cls,window=3": 0.809148810882071,
+      "checkpoint=vitl16,resize_mode=squash,pooling=mean,window=1": 0.8389721179113426,
+      "checkpoint=vitl16,resize_mode=squash,pooling=mean,window=2": 0.8518234017139154,
+      "checkpoint=vitl16,resize_mode=squash,pooling=mean,window=3": 0.8427965265537719,
+      "checkpoint=vitl16,resize_mode=aspect,pooling=cls,window=1": 0.7813279572857003,
+      "checkpoint=vitl16,resize_mode=aspect,pooling=cls,window=2": 0.804376451901387,
+      "checkpoint=vitl16,resize_mode=aspect,pooling=cls,window=3": 0.8007643714660297,
+      "checkpoint=vitl16,resize_mode=aspect,pooling=mean,window=1": 0.8368757000235837,
+      "checkpoint=vitl16,resize_mode=aspect,pooling=mean,window=2": 0.8496720856994837,
+      "checkpoint=vitl16,resize_mode=aspect,pooling=mean,window=3": 0.8410603024135475
+    }
+  },
+  "hsv": {
+    "variant": "window=2",
+    "dev_map": {
+      "window=1": 0.7106360680310745,
+      "window=2": 0.7418115922948552,
+      "window=3": 0.7332809820832167
+    }
+  },
+  "ijepa": {
+    "variant": "resize_mode=aspect,window=3",
+    "dev_map": {
+      "resize_mode=squash,window=1": 0.5866280736336973,
+      "resize_mode=squash,window=2": 0.6857265758049651,
+      "resize_mode=squash,window=3": 0.7057951153087191,
+      "resize_mode=aspect,window=1": 0.6336840804193842,
+      "resize_mode=aspect,window=2": 0.7339976624471265,
+      "resize_mode=aspect,window=3": 0.7559076889323771
+    }
+  },
+  "orb_bovw": {
+    "variant": "window=2",
+    "dev_map": {
+      "window=1": 0.7906474749841563,
+      "window=2": 0.8419247308798652,
+      "window=3": 0.8263226430238313
+    }
+  }
+}

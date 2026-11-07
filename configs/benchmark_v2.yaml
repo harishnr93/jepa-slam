@@ -1,0 +1,37 @@
+# Benchmark v2: the Phase 6 protocol with a wider development-selection space, motivated by
+# docs/improvements.md (Balestriero & LeCun 2026). Everything is still chosen on splits.dev
+# by pooled retrieval mAP, then evaluated once on splits.test. Phase 6 (kitti_stride5) is
+# kept unchanged; this run writes to results/benchmark/kitti_stride5_v2.
+extends: benchmark.yaml
+
+benchmark:
+  name: kitti_stride5_v2
+  methods:                # Phase 6 methods (inherited) plus DINOv3
+    dinov3:    {encoder: dinov3, verify: false}
+    dinov3_gv: {encoder: dinov3, verify: true}
+  variant_grid:           # product of the values; config order breaks ties (first wins)
+    ijepa:
+      resize_mode: [squash, aspect]
+      window: [1, 2, 3]   # causal average of the last w sampled frames' descriptors
+    dinov2:
+      resize_mode: [squash, aspect]
+      pooling: [cls, mean]
+      window: [1, 2, 3]
+    dinov3:
+      checkpoint: [vitb16, vitl16]   # official LVD-1689M weights (licence-gated, git-ignored)
+      resize_mode: [squash, aspect]
+      pooling: [cls, mean]
+      window: [1, 2, 3]
+    orb_bovw:
+      window: [1, 2, 3]
+    hsv:
+      window: [1, 2, 3]
+  encoder_profile: results/metrics/encoder_profile_benchmark_v2.json
+
+dinov3:                  # official code in external/dinov3; licence-gated weights in checkpoints/dinov3
+  checkpoint: vitb16
+  repo_dir: external/dinov3
+  precision: auto
+  resize_mode: squash
+  image_size: 224
+  pooling: cls

@@ -1,0 +1,38 @@
+{
+  "orb": {
+    "n_features": 2000,
+    "scale_factor": 1.2,
+    "n_levels": 8,
+    "edge_threshold": 31,
+    "fast_threshold": 20
+  },
+  "matching": {
+    "ratio": 0.8,
+    "max_hamming": 64,
+    "mutual": true
+  },
+  "min_keypoints": 50,
+  "min_matches": 20,
+  "twin_hamming": 24,
+  "twin_min_px": 16,
+  "max_repeated_fraction": 0.5,
+  "estimator": "opencv",
+  "ransac_threshold_px": 1.0,
+  "ransac_confidence": 0.999,
+  "ransac_max_iters": 2000,
+  "min_inliers": 0,
+  "min_inlier_ratio": 0.3,
+  "coverage_grid": [
+    8,
+    4
+  ],
+  "min_coverage": 0.1,
+  "homography_diagnostic": true,
+  "homography_threshold_px": 2.0,
+  "homography_dominance": 0.9,
+  "rotation_tolerance": 0.05,
+  "pure_rotation_min_deg": 2.0,
+  "min_parallax_deg": 1.0,
+  "degenerate_policy": "flag",
+  "seed": 0
+}

@@ -11,6 +11,7 @@ Usage:
     python scripts/generate_visualizations.py --phase 4                       # verification
     python scripts/generate_visualizations.py --phase 5                       # baselines
     python scripts/generate_visualizations.py --phase 6                       # benchmark
+    python scripts/generate_visualizations.py --phase 8                       # end-to-end GIF
 """
 
 from __future__ import annotations
@@ -34,7 +35,7 @@ from latent_loop.visualization.plots import plot_frame_montage, save_figure
 from latent_loop.visualization.trajectory import plot_trajectory_overview
 
 logger = get_logger("generate_visualizations")
-IMPLEMENTED_PHASES = (1, 2, 3, 4, 5, 6)
+IMPLEMENTED_PHASES = (1, 2, 3, 4, 5, 6, 8)
 DEFAULT_CONFIGS = {
     1: "configs/default.yaml",
     2: "configs/ijepa.yaml",
@@ -42,6 +43,7 @@ DEFAULT_CONFIGS = {
     4: "configs/ijepa.yaml",
     5: "configs/dinov2.yaml",
     6: "configs/benchmark.yaml",
+    8: "configs/benchmark.yaml",
 }
 DEFAULT_OUTPUT_DIRS = {
     2: "assets/phase_02_ijepa",
@@ -49,6 +51,7 @@ DEFAULT_OUTPUT_DIRS = {
     4: "assets/phase_04_geometry",
     5: "assets/phase_05_baselines",
     6: "assets/phase_06_evaluation",
+    8: "assets/phase_08_final",
 }
 
 
@@ -167,6 +170,9 @@ def main() -> None:
     parser.add_argument("--stride", type=int, help="frame stride for sampled-frame plots")
     parser.add_argument("--max-frames", type=int, help="maximum GIF frames")
     parser.add_argument("--gif-sequence", help="phase 6: test sequence for the playback GIF")
+    parser.add_argument(
+        "--query", type=int, default=1010, help="phase 8: query frame ID of the walkthrough"
+    )
     parser.add_argument("--gif-pairs", type=int, help="phase 4: evenly spaced pairs in the GIF")
     parser.add_argument("--gif-fps", type=float, help="GIF frame rate")
     parser.add_argument("--gif-width", type=int, help="GIF width in pixels")
@@ -201,6 +207,18 @@ def main() -> None:
         )
     if args.phase == 1:
         summary = phase1(config, args)
+    elif args.phase == 8:
+        from latent_loop.visualization.phase8 import generate_phase8  # noqa: PLC0415
+
+        summary = generate_phase8(
+            args.config or DEFAULT_CONFIGS[8],
+            resolve_path(args.output_dir or DEFAULT_OUTPUT_DIRS[8]),
+            sequence=args.gif_sequence or "06",
+            query=args.query,
+            gif_fps=args.gif_fps or 8.0,
+            gif_width=args.gif_width or 960,
+            overrides=list(args.set),
+        )
     elif args.phase == 6:
         from latent_loop.visualization.phase6 import generate_phase6  # noqa: PLC0415
 

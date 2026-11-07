@@ -1,6 +1,9 @@
 # Architecture
 
-Status: Phase 6. This document grows with each phase.
+[Back to README](../README.md)
+
+Module map, data flow per phase, and the design rules that keep the evaluation honest.
+The full algorithm descriptions are in the phase documents linked from the README.
 
 ## Module map
 
@@ -39,10 +42,17 @@ flowchart LR
         orb[orb.py<br/>ORB, Hamming kNN,<br/>ratio + mutual, twin fraction]
         geometry[geometry.py<br/>essential-matrix RANSAC<br/>OpenCV 5-pt / own 8-pt,<br/>degeneracy, decisions]
         vpipe[pipeline.py<br/>FeatureStore, verify_candidates,<br/>VerificationRun, label_pairs]
+        par[parallel.py<br/>process pool,<br/>pair cache by config hash]
     end
     subgraph evaluation
         metrics[metrics.py<br/>roc_auc, recall_at_k]
         profiling[profiling.py<br/>Profiler]
+        bench[benchmark.py<br/>AP, detection metrics,<br/>PR curve, threshold]
+        runner[runner.py<br/>Benchmark: run_dev, run_test]
+    end
+    subgraph dashboard
+        dstore[data.py<br/>ResultStore: read-only<br/>cached results]
+        app[app/streamlit_app.py<br/>5 views]
     end
     subgraph visualization
         plots[plots.py]
@@ -52,6 +62,8 @@ flowchart LR
         ret[retrieval.py + phase3.py]
         mat[matches.py + phase4.py]
         base5[baselines.py + phase5.py]
+        eval6[evaluation.py + phase6.py]
+        p8[phase8.py<br/>end-to-end GIF]
     end
     ijepa --> vit
     ijepa --> ebase
@@ -76,6 +88,17 @@ flowchart LR
     vpipe --> detector
     vpipe --> gt
     mat --> vpipe
+    par --> vpipe
+    runner --> detector
+    runner --> par
+    runner --> bench
+    runner --> extraction
+    eval6 --> runner
+    app --> dstore
+    app --> mat
+    dstore --> detector
+    p8 --> dstore
+    p8 --> mat
     kitti --> base
     synthetic --> base
     kitti --> gt
@@ -254,4 +277,33 @@ flowchart TD
     stage's `selection.json` and `thresholds.json` and rejects overlapping splits; it only
     applies them. Verification results are cached per (sequence, verification-config hash),
     so re-running never changes a decision.
+
+## Phase 7: dashboard over cached results
+
+```mermaid
+flowchart LR
+    R[(results/benchmark/kitti_stride5<br/>metrics, thresholds, curves,<br/>predictions, retrieval, pair cache)] --> S[ResultStore<br/>read-only, returns None if missing]
+    K[(KITTI images + poses<br/>optional)] --> S
+    S --> C[st.cache_data / st.cache_resource]
+    C --> V1[Overview]
+    C --> V2[Retrieval explorer]
+    C --> V3[Trajectory]
+    C --> V4[Geometric verification<br/>ORB + RANSAC recomputed on CPU,<br/>compared with the pair cache]
+    C --> V5[Benchmark comparison]
+```
+
+12. **The dashboard never runs a neural network.** It reads Phase 6 outputs only. The single
+    computation it does, ORB + RANSAC for one pair, is checked against the cached decision
+    and the result of that check is shown.
+13. **Missing inputs degrade, they do not crash.** Every `ResultStore` loader returns `None`
+    when its file is absent, and each view states what is missing and which command makes it.
+
+## Phase 8: integration
+
+14. **Release figures come from saved outputs.** `visualization/phase8.py` reads the same
+    `ResultStore` as the dashboard, the embedding cache and the pair cache; the five pairs it
+    draws are re-verified and compared with the cache (`phase8_summary.json`, `matches_cache`).
+15. **Reproducibility is checked by re-running, not assumed.** Re-running the test stage from
+    caches reproduces `test_metrics.csv`, `test_metrics.json`, every prediction file and every
+    retrieval array byte for byte; only wall-clock timing fields change.
 

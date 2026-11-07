@@ -200,3 +200,30 @@ def test_benchmark_runner_protocol(tmp_path):
     cfg["splits"]["test"] = ["00"]
     with pytest.raises(ValueError, match="overlap"):
         Benchmark(cfg).run_test()
+
+
+def test_variant_grid_expansion_and_parsing():
+    from latent_loop.evaluation.runner import (
+        parse_variant,
+        variant_list,
+        window_suffix,
+        with_variant,
+    )
+
+    b = {"variants": {"ijepa": ["squash", "aspect"]}}
+    assert variant_list(b, "ijepa") == ["squash", "aspect"]  # Phase 6 form unchanged
+    assert variant_list(b, "hsv") == [None]
+    b["variant_grid"] = {"dinov2": {"pooling": ["cls", "mean"], "window": [1, 2]}}
+    assert variant_list(b, "dinov2") == [
+        "pooling=cls,window=1",
+        "pooling=cls,window=2",
+        "pooling=mean,window=1",
+        "pooling=mean,window=2",
+    ]
+    assert parse_variant("aspect") == {"resize_mode": "aspect"}
+    assert parse_variant(None) == {}
+    cfg = with_variant({"dinov2": {"pooling": "cls"}}, "dinov2", "pooling=mean,window=2")
+    assert cfg["dinov2"] == {"pooling": "mean"}  # the window is not an encoder setting
+    assert window_suffix(1) == "" and window_suffix(3) == "-w3"
+    with pytest.raises(ValueError, match="unknown variant keys"):
+        variant_list({"variant_grid": {"hsv": {"bins": [8]}}}, "hsv")

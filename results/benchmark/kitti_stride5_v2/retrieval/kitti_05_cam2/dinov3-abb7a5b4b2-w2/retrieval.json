@@ -1,0 +1,16 @@
+{
+  "config": {
+    "top_k": 10,
+    "temporal_exclusion_frames": 100,
+    "temporal_exclusion_seconds": null,
+    "min_similarity": null,
+    "nms_frames": 0,
+    "mode": "causal"
+  },
+  "timing": {
+    "index_build_s": 0.021363,
+    "search_s": 0.052299,
+    "total_s": 0.073775,
+    "search_ms_per_query": 0.094572
+  }
+}

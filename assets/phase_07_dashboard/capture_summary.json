@@ -1,0 +1,49 @@
+{
+  "shots": [
+    {
+      "shot": "overview",
+      "query": "view=overview&seq=06&method=ijepa_gv",
+      "bytes": 107564,
+      "seconds": 46.8
+    },
+    {
+      "shot": "retrieval_explorer",
+      "query": "view=retrieval&seq=06&method=ijepa_gv&q=600",
+      "bytes": 317888,
+      "seconds": 46.8
+    },
+    {
+      "shot": "retrieval_explorer_aliasing",
+      "query": "view=retrieval&seq=02&method=ijepa&q=4570",
+      "bytes": 330295,
+      "seconds": 46.7
+    },
+    {
+      "shot": "trajectory",
+      "query": "view=trajectory&seq=02&method=dinov2_gv&q=4570",
+      "bytes": 94866,
+      "seconds": 46.7
+    },
+    {
+      "shot": "trajectory_08",
+      "query": "view=trajectory&seq=08&method=ijepa_gv",
+      "bytes": 91538,
+      "seconds": 46.5
+    },
+    {
+      "shot": "verification",
+      "query": "view=verification&seq=06&method=ijepa_gv&q=600",
+      "bytes": 1221947,
+      "seconds": 46.7
+    },
+    {
+      "shot": "benchmark",
+      "query": "view=benchmark&split=test",
+      "bytes": 161177,
+      "seconds": 46.6
+    }
+  ],
+  "gif": "dashboard_walkthrough.gif",
+  "gif_frames": 136,
+  "gif_mb": 0.43
+}

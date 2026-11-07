@@ -202,7 +202,7 @@ def test_vocabulary_plan_enforces_development_only():
 
 
 def test_registry_and_common_pipeline(small_synthetic, tmp_path):
-    assert set(AVAILABLE_ENCODERS) == {"ijepa", "dinov2", "hsv", "orb_bovw"}
+    assert set(AVAILABLE_ENCODERS) == {"ijepa", "dinov2", "dinov3", "hsv", "orb_bovw"}
     cfg = load_config("configs/default.yaml")
     enc = build_encoder("hsv", cfg)
     cache = make_cache(tmp_path, small_synthetic, enc)

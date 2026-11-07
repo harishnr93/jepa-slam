@@ -20,6 +20,8 @@ LABELS = {
     "ijepa_gv": "I-JEPA + GV",
     "dinov2": "DINOv2",
     "dinov2_gv": "DINOv2 + GV",
+    "dinov3": "DINOv3",
+    "dinov3_gv": "DINOv3 + GV",
     "orb_bovw": "ORB bag of words",
     "hsv": "HSV histogram",
 }
@@ -28,6 +30,8 @@ COLORS = {  # Okabe-Ito; "+ GV" uses a related darker/lighter hue
     "ijepa_gv": "#0072B2",
     "dinov2": "#E69F00",
     "dinov2_gv": "#D55E00",
+    "dinov3": "#999999",
+    "dinov3_gv": "#000000",
     "orb_bovw": "#CC79A7",
     "hsv": "#009E73",
 }

@@ -1,0 +1,125 @@
+{
+  "phase": 6,
+  "benchmark_dir": "/mnt/e/project_ws/jepa_slam/results/benchmark/kitti_stride5_v2",
+  "methods": [
+    "ijepa",
+    "ijepa_gv",
+    "dinov2",
+    "dinov2_gv",
+    "orb_bovw",
+    "hsv",
+    "dinov3",
+    "dinov3_gv"
+  ],
+  "test_sequences": [
+    "02",
+    "06",
+    "08",
+    "09"
+  ],
+  "gif_sequence": "02",
+  "gif_frames": 110,
+  "gif_size_mb": 7.3,
+  "gif_render_seconds": 113.6,
+  "examples": [
+    {
+      "method": "ijepa_gv",
+      "kind": "FP",
+      "sequence": "06",
+      "query": 920,
+      "candidate": 85,
+      "score": 341.0,
+      "distance": 5.2080971407468,
+      "accepted": true,
+      "true_ref": 90,
+      "true_distance": 1.4332992550296149
+    },
+    {
+      "method": "ijepa_gv",
+      "kind": "FP",
+      "sequence": "02",
+      "query": 4270,
+      "candidate": 1025,
+      "score": 173.0,
+      "distance": 5.917757380727617,
+      "accepted": true,
+      "true_ref": 1035,
+      "true_distance": 3.102005221539113
+    },
+    {
+      "method": "ijepa_gv",
+      "kind": "FN",
+      "sequence": "08",
+      "query": 1685,
+      "candidate": 1175,
+      "score": 10.0,
+      "distance": 247.94171933878746,
+      "accepted": false,
+      "true_ref": 205,
+      "true_distance": 3.1254167141243756
+    },
+    {
+      "method": "ijepa_gv",
+      "kind": "FN",
+      "sequence": "02",
+      "query": 4580,
+      "candidate": 1995,
+      "score": 19.0,
+      "distance": 17.56294936903608,
+      "accepted": false,
+      "true_ref": 3405,
+      "true_distance": 1.0227192186200382
+    },
+    {
+      "method": "dinov2_gv",
+      "kind": "FP",
+      "sequence": "06",
+      "query": 920,
+      "candidate": 85,
+      "score": 341.0,
+      "distance": 5.2080971407468,
+      "accepted": true,
+      "true_ref": 90,
+      "true_distance": 1.4332992550296149
+    },
+    {
+      "method": "dinov2_gv",
+      "kind": "FN",
+      "sequence": "08",
+      "query": 1685,
+      "candidate": 180,
+      "score": 9.0,
+      "distance": 33.84281158814893,
+      "accepted": false,
+      "true_ref": 205,
+      "true_distance": 3.1254167141243756
+    },
+    {
+      "method": "dinov2_gv",
+      "kind": "FN",
+      "sequence": "02",
+      "query": 4575,
+      "candidate": 1995,
+      "score": 90.0,
+      "distance": 11.238163809579625,
+      "accepted": false,
+      "true_ref": 3410,
+      "true_distance": 3.4955034096155275
+    }
+  ],
+  "outputs": {
+    "pr_curves": "kitti_stride5_v2_pr_curves.png",
+    "recall_bars": "kitti_stride5_v2_recall_at_k.png",
+    "f1": "kitti_stride5_v2_f1_comparison.png",
+    "confusion": "kitti_stride5_v2_confusion.png",
+    "runtime": "kitti_stride5_v2_runtime.png",
+    "memory": "kitti_stride5_v2_memory.png",
+    "trajectory_02": "kitti_stride5_v2_trajectory_02.png",
+    "trajectory_06": "kitti_stride5_v2_trajectory_06.png",
+    "trajectory_08": "kitti_stride5_v2_trajectory_08.png",
+    "trajectory_09": "kitti_stride5_v2_trajectory_09.png",
+    "fp_fn_examples": "kitti_stride5_v2_fp_fn_examples.png",
+    "playback_gif": "kitti_stride5_v2_playback_02.gif"
+  },
+  "dev_rows": 24
+}

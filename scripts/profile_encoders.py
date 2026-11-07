@@ -34,7 +34,7 @@ from latent_loop.visualization.animations import select_animation_indices
 def _model_card(name: str, enc, config) -> dict:
     card: dict = {"embedding_dim": enc.embedding_dim()}
     info = enc.info()
-    if name in ("ijepa", "dinov2"):
+    if name in ("ijepa", "dinov2", "dinov3"):
         card["params"] = int(enc.num_params())
         card["weights_file_bytes"] = int(enc.weights_path.stat().st_size)
         card["input"] = f"{info['image_size']} px, {info['resize_mode']}"

@@ -1,0 +1,123 @@
+[
+  {
+    "new": "dinov3_gv (v2)",
+    "base": "dinov2_gv (v2)",
+    "tp_new": 96,
+    "tp_base": 93,
+    "fp_new": 1,
+    "fp_base": 1,
+    "tp_new_only": 3,
+    "tp_base_only": 0,
+    "tp_p": 0.25
+  },
+  {
+    "new": "dinov3 (v2)",
+    "base": "dinov2 (v2)",
+    "tp_new": 102,
+    "tp_base": 99,
+    "fp_new": 17,
+    "fp_base": 3,
+    "tp_new_only": 3,
+    "tp_base_only": 0,
+    "tp_p": 0.25
+  },
+  {
+    "new": "dinov3_gv (v2)",
+    "base": "dinov2_gv (v1)",
+    "tp_new": 96,
+    "tp_base": 97,
+    "fp_new": 1,
+    "fp_base": 2,
+    "tp_new_only": 0,
+    "tp_base_only": 1,
+    "tp_p": 1.0
+  },
+  {
+    "new": "dinov3_gv (v2)",
+    "base": "ijepa_gv (v2)",
+    "tp_new": 96,
+    "tp_base": 96,
+    "fp_new": 1,
+    "fp_base": 2,
+    "tp_new_only": 3,
+    "tp_base_only": 3,
+    "tp_p": 1.0
+  },
+  {
+    "new": "dinov2_gv (v2)",
+    "base": "ijepa_gv (v2)",
+    "tp_new": 93,
+    "tp_base": 96,
+    "fp_new": 1,
+    "fp_base": 2,
+    "tp_new_only": 3,
+    "tp_base_only": 6,
+    "tp_p": 0.5078125
+  },
+  {
+    "new": "dinov2 (v2)",
+    "base": "dinov2 (v1)",
+    "tp_new": 99,
+    "tp_base": 76,
+    "fp_new": 3,
+    "fp_base": 3,
+    "tp_new_only": 25,
+    "tp_base_only": 2,
+    "tp_p": 5.647540092468262e-06
+  },
+  {
+    "new": "dinov2_gv (v2)",
+    "base": "dinov2_gv (v1)",
+    "tp_new": 93,
+    "tp_base": 97,
+    "fp_new": 1,
+    "fp_base": 2,
+    "tp_new_only": 0,
+    "tp_base_only": 4,
+    "tp_p": 0.125
+  },
+  {
+    "new": "ijepa (v2)",
+    "base": "ijepa (v1)",
+    "tp_new": 90,
+    "tp_base": 92,
+    "fp_new": 65,
+    "fp_base": 126,
+    "tp_new_only": 7,
+    "tp_base_only": 9,
+    "tp_p": 0.803619384765625
+  },
+  {
+    "new": "ijepa_gv (v2)",
+    "base": "ijepa_gv (v1)",
+    "tp_new": 96,
+    "tp_base": 97,
+    "fp_new": 2,
+    "fp_base": 2,
+    "tp_new_only": 1,
+    "tp_base_only": 2,
+    "tp_p": 1.0
+  },
+  {
+    "new": "orb_bovw (v2)",
+    "base": "orb_bovw (v1)",
+    "tp_new": 82,
+    "tp_base": 73,
+    "fp_new": 5,
+    "fp_base": 43,
+    "tp_new_only": 17,
+    "tp_base_only": 8,
+    "tp_p": 0.10775214433670044
+  },
+  {
+    "new": "hsv (v2)",
+    "base": "hsv (v1)",
+    "tp_new": 95,
+    "tp_base": 96,
+    "fp_new": 125,
+    "fp_base": 186,
+    "tp_new_only": 3,
+    "tp_base_only": 4,
+    "tp_p": 1.0
+  }
+]

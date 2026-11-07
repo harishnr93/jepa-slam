@@ -33,3 +33,17 @@ results/examples/*
 .DS_Store
 Thumbs.db
 *:Zone.Identifier
+
+# Official third-party code cloned for model loading (not vendored)
+external/
+
+# Model weights are never committed (licences: DINOv2 Apache-2.0, DINOv3 DINOv3 License,
+# I-JEPA CC BY-NC 4.0). Only results are shared.
+*.pth
+*.pth.tar
+*.pt
+*.ckpt
+*.safetensors
+*.bin
+checkpoints/
+*.url

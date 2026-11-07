@@ -1,0 +1,9 @@
+# Streamlit settings for app/streamlit_app.py (read from the repository root).
+[theme]
+base = "light"
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false

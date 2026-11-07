@@ -18,6 +18,7 @@ Ground truth is used only for labels, metrics and the development selections.
 
 from __future__ import annotations
 
+import itertools
 import json
 import time
 from dataclasses import asdict
@@ -39,6 +40,7 @@ from latent_loop.evaluation.benchmark import (
     select_threshold,
 )
 from latent_loop.evaluation.metrics import recall_at_k
+from latent_loop.evaluation.probes import causal_average
 from latent_loop.features.extraction import dataset_cache_key, extract_embeddings, make_cache
 from latent_loop.retrieval import RetrievalConfig, RetrievalResult, retrieve
 from latent_loop.utils.config import resolve_path
@@ -68,10 +70,46 @@ def sequence_config(config: dict, sequence: str) -> dict:
     return cfg
 
 
+def window_suffix(window: int) -> str:
+    """Retrieval-folder suffix of a frame-averaging window (none for 1)."""
+    return f"-w{window}" if window > 1 else ""
+
+
+def parse_variant(variant: str | None) -> dict[str, str]:
+    """``"aspect"`` (Phase 6: a resize mode) or ``"pooling=mean,resize_mode=aspect,window=2"``."""
+    if variant is None:
+        return {}
+    if "=" not in variant:
+        return {"resize_mode": variant}
+    return dict(part.split("=", 1) for part in variant.split(","))
+
+
+def variant_list(b: dict, encoder: str) -> list[str | None]:
+    """Candidate variants of one encoder, in config order (the first wins ties).
+
+    ``benchmark.variant_grid.<encoder>`` (a mapping of key -> values) is expanded as a
+    product; otherwise ``benchmark.variants.<encoder>`` (resize modes) is used.
+    Keys: ``checkpoint``, ``resize_mode`` and ``pooling`` (encoder settings) and
+    ``window`` (causal frame averaging of the descriptors, a post-processing step; 1 = off).
+    """
+    grid = (b.get("variant_grid") or {}).get(encoder)
+    if not grid:
+        return list((b.get("variants") or {}).get(encoder, [None]))
+    unknown = set(grid) - {"checkpoint", "resize_mode", "pooling", "window"}
+    if unknown:
+        raise ValueError(f"unknown variant keys for {encoder}: {sorted(unknown)}")
+    keys = list(grid)
+    return [
+        ",".join(f"{k}={v}" for k, v in zip(keys, combo, strict=True))
+        for combo in itertools.product(*(grid[k] for k in keys))
+    ]
+
+
 def with_variant(cfg: dict, encoder: str, variant: str | None) -> dict:
     cfg = _copy(cfg)
-    if variant is not None:
-        cfg.setdefault(encoder, {})["resize_mode"] = variant
+    for k, v in parse_variant(variant).items():
+        if k != "window":
+            cfg.setdefault(encoder, {})[k] = v
     return cfg
 
 
@@ -149,12 +187,19 @@ class Benchmark:
         fp = enc.fingerprint()
         info = enc.info()
         enc.unload()
-        rdir = self.out / "retrieval" / s["key"] / f"{encoder}-{fp}"
-        result = retrieve(
-            s["dataset"].frame_ids, s["dataset"].timestamps(), res.embeddings, self.rcfg
-        )
+        window = int(parse_variant(variant).get("window", 1))
+        emb = res.embeddings if window == 1 else causal_average(res.embeddings, window)
+        rdir = self.out / "retrieval" / s["key"] / f"{encoder}-{fp}{window_suffix(window)}"
+        result = retrieve(s["dataset"].frame_ids, s["dataset"].timestamps(), emb, self.rcfg)
         result.save(rdir)
-        return {"embeddings": res.embeddings, "result": result, "fingerprint": fp, "info": info}
+        return {
+            "embeddings": emb,
+            "result": result,
+            "fingerprint": fp,
+            "info": info,
+            "variant": variant,
+            "window": window if "window" in parse_variant(variant) else None,
+        }
 
     def retrieval_metrics(self, seq: str, d: dict) -> dict[str, Any]:
         s, r = self.sequence(seq), d["result"]
@@ -219,7 +264,7 @@ class Benchmark:
         selection: dict[str, Any] = {}
         for enc in sorted({self.encoder_of(m) for m in self.methods}):
             scores = {}
-            for v in self.variants.get(enc, [None]):
+            for v in variant_list(self.b, enc):
                 aps = []
                 for seq in dev:
                     rm = self.retrieval_metrics(seq, self.descriptors(seq, enc, v))
@@ -328,8 +373,9 @@ class Benchmark:
         return {
             "method": method,
             "sequence": seq,
-            "variant": d["info"].get("resize_mode"),
+            "variant": d["variant"] if d.get("variant") else d["info"].get("resize_mode"),
             "fingerprint": d["fingerprint"],
+            **({"window": d["window"]} if d.get("window") is not None else {}),
             "queries": int(pred.evaluable.sum()),
             "positive_queries": rm["positive_queries"],
             "recall_at_1": rm["recall"][1],
@@ -367,6 +413,7 @@ class Benchmark:
             "queries": sum(r["queries"] for r in mine),
             "positive_queries": npos,
             "variant": mine[0]["variant"],
+            **({"window": mine[0]["window"]} if "window" in mine[0] else {}),
             "fingerprint": ",".join(sorted({r["fingerprint"] for r in mine})),
             "map": float(aps.mean()),
         }
