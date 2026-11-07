@@ -2,13 +2,13 @@
 
 **Self-supervised visual place recognition and loop closure detection with JEPA representations, geometric verification and a reproducible KITTI benchmark.**
 
-> **Research question.** Can frozen, pretrained I-JEPA features detect loop closures as well as DINOv2 and classical methods can?
+> Can frozen, pretrained I-JEPA features detect loop closures as well as DINOv2 and classical methods can?
 
 ![End-to-end pipeline on held-out KITTI 06](assets/phase_08_final/pipeline_end_to_end.gif)
 
 *One held-out query, traced from the camera frame through the I-JEPA descriptor, retrieval, ORB + RANSAC verification and the loop decision to the trajectory and benchmark. Every number is read from saved outputs ([how this GIF is made](docs/phase8_integration.md#end-to-end-pipeline-gif)).*
 
-## Answer, in short
+## In short
 
 The evaluation is on held-out KITTI sequences 02, 06, 08 and 09: 2,208 queries, 190 of them true revisits. Thresholds were chosen on sequences 00 and 05 only. The neural encoders ran on the **GPU** (GTX 1650 Ti, FP32); everything else ran on the **CPU** (Ryzen 7 4800H, 8 verification workers).
 
